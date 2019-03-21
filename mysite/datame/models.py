@@ -1,10 +1,12 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 # Create your models here.
 
 
 class DataScientist_model(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length = 30)
     surname = models.CharField('Surname', max_length = 50)
     
@@ -20,7 +22,7 @@ class Apply_model(models.Model):
         ('RE', 'REJECTED')
     )
     
-    title = models.CharField('Offer title', max_length = 80)
+    title = models.CharField('Apply title', max_length = 80)
     description = models.TextField('Apply description')
     date = models.DateTimeField(blank=True)
     status = models.CharField('Status',max_length = 8, choices = STATUS_CHOICES)
