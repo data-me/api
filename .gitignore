@@ -1,2 +1,5 @@
+dmvenv/*
 mysite/mysite/settings.py
 .idea/*
+.DS_STORE
+mysite/mysite/__pycache__/
