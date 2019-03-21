@@ -42,7 +42,8 @@ class Apply_model(models.Model):
     description = models.TextField('Apply description')
     date = models.DateTimeField(blank=True)
     status = models.CharField('Status',max_length = 8, choices = STATUS_CHOICES)
-    dataScientist = models.ForeignKey(DataScientist_model, on_delete=models.CASCADE)
+    dataScientist = models.OneToOneField(DataScientist_model, on_delete=models.CASCADE)
+    offer = models.ForeignKey(Offer_model, on_delete=models.CASCADE)
     
 
     def __str__(self):

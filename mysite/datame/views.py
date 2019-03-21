@@ -16,11 +16,15 @@ def Apply(request):
         title = data['title']
         description = data['description']
         date = datetime.datetime.utcnow()
-        dataScientist = DataScientist_model.objects.filter(user = request.user)
+        dataScientist = DataScientist_model.objects.all().filter(user = request.user)
+        offer = data['offer']
+        #Aquí pretendo hacer una restriccion comparando si el usuario logueado está dentro de la lista de usuarios que han hecho apply
+        #Sin embargo lo dejo comentado ya que no puedo probarlo
+        #usuariosAplicados = Apply_model.objects.all().select_related("dataScientist")
+        #if(not (dataScientist in usuariosAplicados)):
         
-        # Creation of new offer
-        new_apply = Apply_model.objects.create(title=title, description=description, status=Apply_model.STATUS_CHOICES[0][1], date=date, dataScientist = dataScientist)
-
+        new_apply = Apply_model.objects.create(title=title, description=description, status=Apply_model.STATUS_CHOICES[0][1], date=date, dataScientist = dataScientist, offer = offer)
+        
         print('Sucessfully created new apply')
         return JsonResponse({"message":"Successfully created new apply"})
     
