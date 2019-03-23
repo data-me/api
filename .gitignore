@@ -2,5 +2,6 @@
 .idea/*
 *.DS_STORE
 venv/*
+mysite/datame/__pycache__/*
 mysite/mysite/__pycache__/*
-mysite/mysite/migrations/*
+mysite/datame/migrations/*
