@@ -3,3 +3,4 @@
 *.DS_STORE
 venv/*
 mysite/mysite/__pycache__/*
+mysite/mysite/migrations/*
