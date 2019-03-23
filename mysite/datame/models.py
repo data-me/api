@@ -6,7 +6,7 @@ class Bill_model(models.Model):
 
     STATUS_CHOICES = (
         ('PE', 'PENDING'),
-        ('AC', 'ACEPTED'),
+        ('AC', 'ACCEPTED'),
         ('RE', 'REJECTED')
     )
 
