@@ -19,6 +19,6 @@ from datame.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("hi/", hi, name="hi"),
-    path('api/v1/bill/', Bill,name='bill')
+    path('api/v1/bill/', Bill,name='bill'),
+    path('api/v1/offer/', Offer ,name='offer')
 ]
