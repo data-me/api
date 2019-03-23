@@ -34,10 +34,12 @@ def Contract(request):
         accepted_ds = data['accepted_ds']
         accepted_company = data['accepted_company']
         expiration = data['expiration']
-        dataScientist = data['dataScientist']
-        offer = data['offer']
+        dataScientistId = data['dataScientist']
+        offerId = data['offer']
         date_created = datetime.datetime.utcnow()
         
+        dataScientist = DataScientist_model.objects.all().get(pk = dataScientistId)
+        offer = Offer_model.objects.all().get(pk = offerId)
         # Creation of new offer
         new_contract = Contract_model.objects.create(limit_date=limit_date, accepted_ds=accepted_ds, accepted_company=accepted_company, expiration=expiration, dataScientist = dataScientist, offer = offer, date_created = date_created )
 
@@ -103,11 +105,8 @@ def Offer(request):
             return JsonResponse({"message":"Successfully created new offer"})
         if request.method == "GET":
             ofertas = []
-            if(request.user.is_authenticated):
-                dataScientist = DataScientist_model.objects.get(user = request.user)
-                if (dataScientist != None):
-                    date = date.utcnow()
-                    ofertas = Offer_model.objects.all().filter(limit_time__gte = date)
+
+            ofertas = Offer_model.objects.all().filter(limit_time__gte = date)
                 #else:
                  #   company = Company_model.objects.get(user = request.user)
                   #      if(company != None):
