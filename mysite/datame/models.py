@@ -98,4 +98,29 @@ class File_model(models.Model):
     def __str__(self):
         return self.name
 
+# Curriculum vitae
+class CV(models.Model):
+    owner = models.OneToOneField('datame.DataScientist_model', default = "", on_delete = models.CASCADE)
+    
+    def __str__(self):
+        return self.owner.name
+        
+# Sections of a curriculum
+class Section(models.Model):
+    name = models.CharField("Section name", max_length = 50)
+    cv = models.ForeignKey("datame.CV", on_delete = models.CASCADE, related_name = 'sections')
 
+    def __str__(self):
+        return self.name
+
+# Items of a section
+class Item(models.Model):
+    name = models.CharField("Name", max_length=50)
+    section = models.ForeignKey("datame.Section", on_delete = models.CASCADE, related_name = 'items')
+    description = models.CharField("Description", max_length=100)
+    entity = models.CharField("Entity", max_length=50)
+    date_start = models.DateTimeField("Start date")
+    date_finish = models.DateTimeField("End date", blank=True, null=True)
+
+    def __str__(self):
+        return self.name
