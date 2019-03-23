@@ -15,7 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from datame.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/v1/bill/', Bill,name='bill'),
+    path('api/v1/offer/', Offer ,name='offer')
 ]
