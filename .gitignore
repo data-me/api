@@ -1,5 +1,5 @@
 *.env
 .idea/*
-.DS_STORE
+*.DS_STORE
 venv/*
-mysite/mysite/__pycache__/
+mysite/mysite/__pycache__/*
