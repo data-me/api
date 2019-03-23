@@ -101,6 +101,19 @@ def Offer(request):
             print('La data que devuelve es: ' + str(data)) 
             print('Sucessfully created new offer')
             return JsonResponse({"message":"Successfully created new offer"})
+        if request.method == "GET":
+            ofertas = []
+            if(request.user.is_authenticated):
+                dataScientist = DataScientist_model.objects.get(user = request.user)
+                if (dataScientist != None):
+                    date = date.utcnow()
+                    ofertas = Offer_model.objects.all().filter(limit_time__gte = date)
+                #else:
+                 #   company = Company_model.objects.get(user = request.user)
+                  #      if(company != None):
+                   #         ofertas = Company_model.objects.get(user = request.user).select_related("offers")
+            return JsonResponse(ofertas)    
+                
 
     except:
         print('La data que devuelve es: ' + str(data)) 
