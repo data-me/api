@@ -100,7 +100,7 @@ class File(models.Model):
 
 # Curriculum vitae
 class CV(models.Model):
-    owner = models.OneToOneField('datame.DataScientist_model', default = "", on_delete = models.CASCADE)
+    owner = models.OneToOneField('datame.DataScientist', default = "", on_delete = models.CASCADE)
     
     def __str__(self):
         return self.owner.name
