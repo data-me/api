@@ -13,7 +13,7 @@ import json
 from http.client import HTTPResponse
 from django.core import serializers
 from django.contrib.auth.models import User
-
+from django import forms
 
 # Create your views here.
 @csrf_exempt
@@ -52,20 +52,29 @@ def Apply_view(request):
         return JsonResponse(dataF, safe=False)
 
 @csrf_exempt
-def Contract(request):
+def Contract_view(request):
     if request.method == "POST":
         data = request.POST
         limit_date = data['limit_date']
-        accepted_ds = data['accepted_ds']
-        accepted_company = data['accepted_company']
+        accepted_ds = bool(data['accepted_ds'])
+        accepted_company = bool(data['accepted_company'])
         expiration = data['expiration']
         dataScientistId = data['dataScientist']
         offerId = data['offer']
         date_created = datetime.datetime.utcnow()       
-        dataScientist = DataScientist_model.objects.all().get(pk = dataScientistId)
-        offer = Offer_model.objects.all().get(pk = offerId)
+        dataScientist = DataScientist.objects.all().get(pk = dataScientistId)
+        offer = Offer.objects.all().get(pk = offerId)
+        
+         # Time management
+        split_time = limit_date.split(',') # Split by comma what was sent from client
+        split_time = list(map(int, split_time)) # Convert from list of string to list of integers
+
+        if len(split_time) == 7:
+            date = datetime.datetime(split_time[0], split_time[1],
+                split_time[2], split_time[3], split_time[4], split_time[5], split_time[6], pytz.UTC)
+        
         # Creation of new offer
-        new_contract = Contract.objects.create(limit_date=limit_date, accepted_ds=accepted_ds, accepted_company=accepted_company, expiration=expiration, dataScientist = dataScientist, offer = offer, date_created = date_created )
+        new_contract = Contract.objects.create(date_created = date_created, limit_date=date, accepted_ds=accepted_ds, accepted_company=accepted_company, expiration=expiration, dataScientist = dataScientist, offer = offer)
 
         print('Sucessfully created contract')
         return JsonResponse({"message":"Successfully created new contract"})

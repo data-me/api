@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django import forms
 from django.utils import timezone
+from django.template.defaultfilters import default
 
 # Create your models here.
 
@@ -83,8 +84,8 @@ class Contract(models.Model):
 
     date_created = models.DateTimeField(blank=True)
     limit_date = models.DateTimeField(blank=True)
-    accepted_ds = forms.BooleanField(initial=False)
-    accepted_company = forms.BooleanField(initial=True)
+    accepted_ds = models.BooleanField(default = False)
+    accepted_company = models.BooleanField(default = True)
     expiration = models.IntegerField()
     dataScientist = models.ForeignKey(DataScientist, on_delete=models.CASCADE)
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
