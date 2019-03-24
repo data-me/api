@@ -1,5 +1,7 @@
 Django==2.1
 psycopg2
-python-dotenv
 djangorestframework
+python-dotenv
+djangorestframework_jwt
+django-cors-headers
 django-filter
