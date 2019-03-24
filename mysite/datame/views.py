@@ -5,6 +5,12 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import pytz, datetime
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+import json
+
 
 # Create your views here.
 @csrf_exempt
@@ -16,7 +22,7 @@ def Apply(request):
         date = datetime.datetime.utcnow()
         dataScientist = DataScientist_model.objects.all().filter(user = request.user)
         offer = data['offer']
-        #Aquí pretendo hacer una restriccion comparando si el usuario logueado está dentro de la lista de usuarios que han hecho apply
+        #Aquï¿½ pretendo hacer una restriccion comparando si el usuario logueado estï¿½ dentro de la lista de usuarios que han hecho apply
         #Sin embargo lo dejo comentado ya que no puedo probarlo
         #usuariosAplicados = Apply_model.objects.all().select_related("dataScientist")
         #if(not (dataScientist in usuariosAplicados)):
