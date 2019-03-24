@@ -23,27 +23,6 @@ class Company(models.Model):
         return self.name
 
 
-# Create your models here.
-class Bill(models.Model):
-
-    STATUS_CHOICES = (
-        ('PE', 'PENDING'),
-        ('AC', 'ACCEPTED'),
-        ('RE', 'REJECTED')
-    )
-
-    quantity = models.FloatField()
-    tax = models.FloatField()
-    total = models.FloatField()
-    date = models.DateTimeField(default=timezone.now)
-    status = models.CharField('Status',max_length = 8, choices = STATUS_CHOICES)
-    #offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
-    #user_plan = models.ForeignKey(user_plan, on_delete=models.CASCADE)
-
-
-    def __str__(self):
-        return self.status
-
 class Offer(models.Model):
     CURRENCY_CHOICES = (
         ('0', '€'),
@@ -95,6 +74,25 @@ class Contract(models.Model):
         cadena = self.offer.title + "//" + self.dataScientist.name
         return cadena
 
+class Bill(models.Model):
+
+    STATUS_CHOICES = (
+        ('PE', 'PENDING'),
+        ('AC', 'ACCEPTED'),
+        ('RE', 'REJECTED')
+    )
+
+    quantity = models.FloatField()
+    tax = models.FloatField()
+    total = models.FloatField()
+    date = models.DateTimeField(default=timezone.now)
+    status = models.CharField('Status',max_length = 8, choices = STATUS_CHOICES)
+    contract = models.ForeignKey(Contract, default = "",on_delete=models.CASCADE)
+    #user_plan = models.ForeignKey(user_plan, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return self.status
 
 class File(models.Model):
 
