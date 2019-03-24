@@ -99,6 +99,7 @@ def File(request):
 
         print('Sucessfully created File')
         return JsonResponse({"message":"Successfully created new File"})
+
 @csrf_exempt
 def Bill_view(request):
     if request.method == "POST":
@@ -108,10 +109,11 @@ def Bill_view(request):
         total = data['total']
         date = datetime.datetime.utcnow()
         status = data['status']
-
+        contractId = data['contract']
+        contract = Contract.objects.all().get(pk = contractId)
 
         # Creation of new offer
-        new_bill = Bill.objects.create(quantity=quantity, tax=tax, total=total, date=date, status=status)
+        new_bill = Bill.objects.create(quantity=quantity, tax=tax, total=total, date=date, status=status, contract = contract)
 
         print('Sucessfully created new bill')
         return JsonResponse({"message":"Successfully created new bill"})
