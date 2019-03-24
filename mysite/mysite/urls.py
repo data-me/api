@@ -15,13 +15,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 from datame.views import *
+from authentication import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/v1/login', obtain_jwt_token),
+    path('api/v1/refresh',refresh_jwt_token),
     path('api/v1/bill/', Bill,name='bill'),
-    path('api/v1/offer/', Offer ,name='offer'),
+    path('api/v1/offer/', Offer_view ,name='offer'),
     path('api/v1/apply/', Apply,name='apply'),
     path('api/v1/contract/', Contract,name='contract'),
-    path('api/v1/file/', File,name='file')
+    path('api/v1/file/', File,name='file'),
+    path('api/v1/helloworld', views.HelloWorld.as_view()),
+    path('api/v1/cv/', CV,name='cv')
+
 ]
