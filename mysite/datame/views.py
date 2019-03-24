@@ -20,13 +20,13 @@ def Apply(request):
         #Sin embargo lo dejo comentado ya que no puedo probarlo
         #usuariosAplicados = Apply_model.objects.all().select_related("dataScientist")
         #if(not (dataScientist in usuariosAplicados)):
-        
+
         new_apply = Apply.objects.create(title=title, description=description, status=Apply_model.STATUS_CHOICES[0][1], date=date, dataScientist = dataScientist, offer = offer)
-        
+
         print('Sucessfully created new apply')
         return JsonResponse({"message":"Successfully created new apply"})
-    
-@csrf_exempt   
+
+@csrf_exempt
 def Contract(request):
     if request.method == "POST":
         data = request.POST
@@ -37,14 +37,14 @@ def Contract(request):
         dataScientist = data['dataScientist']
         offer = data['offer']
         date_created = datetime.datetime.utcnow()
-        
+
         # Creation of new offer
         new_contract = Contract.objects.create(limit_date=limit_date, accepted_ds=accepted_ds, accepted_company=accepted_company, expiration=expiration, dataScientist = dataScientist, offer = offer, date_created = date_created )
 
         print('Sucessfully created contract')
         return JsonResponse({"message":"Successfully created new contract"})
-    
-@csrf_exempt   
+
+@csrf_exempt
 def File(request):
     if request.method == "POST":
         data = request.POST
@@ -52,7 +52,7 @@ def File(request):
         path = data['path']
         apply = data['apply']
         offer = data['offer']
-        
+
         # Creation of new offer
         new_file = File.objects.create(name=name, path=path, apply=apply, offer=offer)
 
@@ -67,11 +67,11 @@ def Bill_view(request):
         total = data['total']
         date = datetime.datetime.utcnow()
         status = data['status']
-        
+
 
         # Creation of new offer
         new_bill = Bill.objects.create(quantity=quantity, tax=tax, total=total, date=date, status=status)
- 
+
         print('Sucessfully created new bill')
         return JsonResponse({"message":"Successfully created new bill"})
 
@@ -87,18 +87,18 @@ def Offer(request):
             limit_time = data['limit_time']
 
             # Time management
-            split_time = limit_time.split(',') # Split by comma what was sent from client 
+            split_time = limit_time.split(',') # Split by comma what was sent from client
             split_time = list(map(int, split_time)) # Convert from list of string to list of integers
 
             if len(split_time) == 7:
-                date = datetime.datetime(split_time[0], split_time[1], 
+                date = datetime.datetime(split_time[0], split_time[1],
                     split_time[2], split_time[3], split_time[4], split_time[5], split_time[6], pytz.UTC)
-            
+
             # Creation of new offer
-            new_offer = Offer.objects.create(title=title, description=description, 
+            new_offer = Offer.objects.create(title=title, description=description,
                 price_offered=float(price_offered), currency=currency, limit_time=date)
 
-            print('La data que devuelve es: ' + str(data)) 
+            print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new offer')
             return JsonResponse({"message":"Successfully created new offer"})
         if request.method == "GET":
@@ -112,9 +112,42 @@ def Offer(request):
                  #   company = Company_model.objects.get(user = request.user)
                   #      if(company != None):
                    #         ofertas = Company_model.objects.get(user = request.user).select_related("offers")
-            return JsonResponse(ofertas)    
-                
+            return JsonResponse(ofertas)
+
 
     except:
-        print('La data que devuelve es: ' + str(data)) 
-        
+        print('La data que devuelve es: ' + str(data))
+
+
+@csrf_exempt
+def CV(request):
+    try:
+        if request.method == "GET":
+            curriculum = []
+            sections = []
+            items = []
+            if(request.user.is_authenticated):
+                dataScientist = DataScientist.objects.get(user = request.user)
+                # Ver mi CV
+                if (dataScientist != None):
+                    curriculum = CV.objects.all().filter(owner = dataScientist)
+                    sections = Section.objects.all().filter(cv = curriculum[0])
+                    for sec in sections:
+                        sec_items = Item.objects.all().filter(section = sec)
+                        items.append(sec_items);
+                # Ver el CV de un Data scientist (como Company)
+                else:
+                    company = Company.objects.get(user = request.user)
+                    if(company != None):
+                        scientist = request.data.get('dataScientist')
+                        Curriculum = CV.objects.all().filter(owner = scientist)
+                        sections = Section.objects.all().filter(cv = curriculum[0])
+                        for sec in sections:
+                            sec_items = Item.objects.all().filter(section = sec)
+                            items.append(sec_items);
+
+            return JsonResponse(items)
+
+
+    except:
+        print('La data que devuelve es: ' + str(data))
