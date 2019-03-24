@@ -13,7 +13,14 @@ import json
 from http.client import HTTPResponse
 from django.core import serializers
 from django.contrib.auth.models import User
+from django.core.serializers.json import DjangoJSONEncoder
 from django import forms
+
+class LazyEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Offer):
+            return str(obj)
+        return super().default(obj)
 
 # Create your views here.
 @csrf_exempt
@@ -43,13 +50,12 @@ def Apply_view(request):
         userRecuperado = User.objects.all().get(pk = userId)
         dataScientistRecuperado = DataScientist.objects.all().get(user = userRecuperado)
         if (filtro == 'PE'):
-            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='PE')
+            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='PE').values()
         if (filtro == 'AC'):
-            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='AC')
+            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='AC').values()
         if (filtro == 'RE'):
-            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='RE')
-        dataF = serializers.serialize('json', applys)
-        return JsonResponse(dataF, safe=False)
+            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='RE').values()
+        return JsonResponse(list(applys), safe=False)
 
 @csrf_exempt
 def Contract_view(request):
@@ -140,13 +146,13 @@ def Offer_view(request):
         if request.method == "GET":
             ofertas = []
             date = datetime.datetime.utcnow()
-            ofertas = Offer.objects.all().filter(limit_time__gte = date)
-            data = serializers.serialize('json', ofertas)
+            ofertas = Offer.objects.all().filter(limit_time__gte = date).values()
+            
                 #else:
                  #   company = Company_model.objects.get(user = request.user)
                   #      if(company != None):
                    #         ofertas = Company_model.objects.get(user = request.user).select_related("offers")
-            return JsonResponse(data, safe=False)
+            return JsonResponse(list(ofertas), safe=False)
 
 
 @csrf_exempt
