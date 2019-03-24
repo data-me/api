@@ -12,11 +12,12 @@ from rest_framework import status
 import json
 from http.client import HTTPResponse
 from django.core import serializers
+from django.contrib.auth.models import User
 
 
 # Create your views here.
 @csrf_exempt
-def Apply(request):
+def Apply_view(request):
     if request.method == "POST":
         data = request.POST
         title = data['title']
@@ -33,6 +34,22 @@ def Apply(request):
 
         print('Sucessfully created new apply')
         return JsonResponse({"message":"Successfully created new apply"})
+    if request.method == "GET":
+        applys = []
+        data = request.GET
+        filtro = data['filtro']
+        #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
+        userId = data['userId']
+        userRecuperado = User.objects.all().get(pk = userId)
+        dataScientistRecuperado = DataScientist.objects.all().get(user = userRecuperado)
+        if (filtro == 'PE'):
+            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='PE')
+        if (filtro == 'AC'):
+            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='AC')
+        if (filtro == 'RE'):
+            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='RE')
+        dataF = serializers.serialize('json', applys)
+        return JsonResponse(dataF, safe=False)
 
 @csrf_exempt
 def Contract(request):
