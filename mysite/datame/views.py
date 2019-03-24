@@ -61,10 +61,10 @@ def Contract_view(request):
         expiration = data['expiration']
         dataScientistId = data['dataScientist']
         offerId = data['offer']
-        date_created = datetime.datetime.utcnow()       
+        date_created = datetime.datetime.utcnow()
         dataScientist = DataScientist.objects.all().get(pk = dataScientistId)
         offer = Offer.objects.all().get(pk = offerId)
-        
+
          # Time management
         split_time = limit_date.split(',') # Split by comma what was sent from client
         split_time = list(map(int, split_time)) # Convert from list of string to list of integers
@@ -72,7 +72,7 @@ def Contract_view(request):
         if len(split_time) == 7:
             date = datetime.datetime(split_time[0], split_time[1],
                 split_time[2], split_time[3], split_time[4], split_time[5], split_time[6], pytz.UTC)
-        
+
         # Creation of new offer
         new_contract = Contract.objects.create(date_created = date_created, limit_date=date, accepted_ds=accepted_ds, accepted_company=accepted_company, expiration=expiration, dataScientist = dataScientist, offer = offer)
 
@@ -150,34 +150,38 @@ def Offer_view(request):
 
 
 @csrf_exempt
-def CV(request):
-    try:
+def CV_view(request):
         if request.method == "GET":
+            data = request.GET
+
             curriculum = []
             sections = []
             items = []
-            if(request.user.is_authenticated):
-                dataScientist = DataScientist.objects.get(user = request.user)
-                # Ver mi CV
-                if (dataScientist != None):
-                    curriculum = CV.objects.all().filter(owner = dataScientist)
-                    sections = Section.objects.all().filter(cv = curriculum[0])
-                    for sec in sections:
-                        sec_items = Item.objects.all().filter(section = sec)
-                        items.append(sec_items);
-                # Ver el CV de un Data scientist (como Company)
-                else:
-                    company = Company.objects.get(user = request.user)
-                    if(company != None):
-                        scientist = request.data.get('dataScientist')
-                        Curriculum = CV.objects.all().filter(owner = scientist)
-                        sections = Section.objects.all().filter(cv = curriculum[0])
-                        for sec in sections:
-                            sec_items = Item.objects.all().filter(section = sec)
-                            items.append(sec_items);
+            #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
+            userId = data['userId']
+            userRecuperado = User.objects.all().get(pk = userId)
+            dataScientistRecuperado = DataScientist.objects.all().get(user = userRecuperado)
 
-            return JsonResponse(items)
+            # Ver mi CV
+            if (dataScientistRecuperado != None):
+                curriculum = CV.objects.all().filter(owner = dataScientistRecuperado)
+                sections = Section.objects.all().filter(cv = curriculum[0])
+                for sec in sections:
+                    sec_items = Item.objects.all().filter(section = sec)
+                    items.append(sec_items);
+            # Ver el CV de un Data scientist (como Company)
+            else:
+                #companyRecuperado = Company.objects.all().get(user = userRecuperado)
+            #if (companyRecuperado != None):
+                dataScientistId = data['dataScientistId']
+                dataScientistUserRecuperado = User.objects.all().get(pk = dataScientistId)
+                scientist = DataScientist.objects.all().get(user = dataScientistUserRecuperado)
 
+                curriculum = CV.objects.all().filter(owner = scientist)
+                sections = Section.objects.all().filter(cv = curriculum[0])
+                for sec in sections:
+                    sec_items = Item.objects.all().filter(section = sec)
+                    items.append(sec_items);
 
-    except:
-        print('La data que devuelve es: ' + str(data))
+            dataF = serializers.serialize('json', items)
+            return JsonResponse(dataF, safe=False)
