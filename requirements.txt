@@ -4,3 +4,4 @@ djangorestframework
 python-dotenv
 djangorestframework_jwt
 django-cors-headers
+django-filter
