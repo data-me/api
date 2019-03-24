@@ -146,8 +146,8 @@ def Offer_view(request):
         if request.method == "GET":
             ofertas = []
             date = datetime.datetime.utcnow()
-            ofertas = Offer.objects.all().filter(limit_time__gte = date).values()
-            
+            ofertas = Offer.objects.all().filter(limit_time__gte = date)
+            data = serializers.serialize('json', ofertas )
                 #else:
                  #   company = Company_model.objects.get(user = request.user)
                   #      if(company != None):
