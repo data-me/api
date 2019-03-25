@@ -29,6 +29,6 @@ urlpatterns = [
     path('api/v1/contract/', Contract_view,name='contract'),
     path('api/v1/file/', File,name='file'),
     path('api/v1/helloworld', views.HelloWorld.as_view()),
-    path('api/v1/cv/', CV,name='cv')
+    path('api/v1/cv/', CV_view,name='cv')
 
 ]
