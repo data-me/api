@@ -115,6 +115,30 @@ def Bill_view(request):
 
         print('Sucessfully created new bill')
         return JsonResponse({"message":"Successfully created new bill"})
+    elif request.method == 'GET':
+        data = request.GET
+        idUsuario = data['idUsuario']
+        userRecuperado = User.objects.all().get(pk = idUsuario)
+        dataScientistRecuperado = DataScientist.objects.all().get(user = userRecuperado)
+        bills = []
+        contracts = []
+        #bills = Bill.objects.all().values()
+        applies = Apply.objects.all().filter(dataScientist = dataScientistRecuperado).distinct()
+        for apply in applies:
+            try:
+                contract = Contract.objects.all().filter(apply=apply).distinct()
+            except:
+                contract = None
+            if (contract != None):
+                contracts.extend(list(contract))
+        for contract in contracts:
+            try:
+                bill = Bill.objects.all().filter(contract_id = contract.id).values()
+            except:
+                bill = None
+            if (bill != None):
+                bills.extend(list(bill))
+        return JsonResponse(bills, safe=False)
         
 @csrf_exempt
 def Offer_view(request):
