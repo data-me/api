@@ -171,7 +171,7 @@ def CV_view(request):
                 for sec in sections:
                     sec_items = Item.objects.all().filter(section = sec)
                     data_sec_items = serializers.serialize('json', sec_items)
-                    items.append(data_sec_items);
+                    items.append(data_sec_items)
             # Ver el CV de un Data scientist (como Company)
             else:
             #companyRecuperado = Company.objects.all().get(user = userRecuperado)
@@ -184,6 +184,50 @@ def CV_view(request):
                 sections = Section.objects.all().filter(cv = curriculum[0])
                 for sec in sections:
                     sec_items = Item.objects.all().filter(section = sec)
-                    items.append(sec_items);
+                    items.append(sec_items)
 
-            return JsonResponse(items, safe=False)
+            return JsonResponse(list(items), safe=False)
+        
+        elif request.method == "POST":
+            data = request.POST
+            userid = data['userid']
+            user = DataScientist.objects.all().get(pk = userid)
+
+            new_curriculum = CV.objects.create(owner=user)
+               
+            print('La data que devuelve es: ' + str(data))
+            print('Sucessfully created new curriculum')
+            return JsonResponse({"message":"Successfully created new curriculum"})
+
+@csrf_exempt
+def section_view(request):
+    if request.method == "POST":
+        data = request.POST
+        secname = data['name']
+        cvid = data['cvid']
+        cv = CV.objects.all().get(pk = cvid)
+        
+        new_section = Section.objects.create(name = secname, cv = cv)
+               
+        print('La data que devuelve es: ' + str(data))
+        print('Sucessfully created new section')
+        return JsonResponse({"message":"Successfully created new section"})
+
+@csrf_exempt
+def item_view(request):
+    if request.method == "POST":
+        data = request.POST
+        itemname = data['name']
+        secid = data['secid']
+        description = data['description']
+        entity = data['entity']
+        date_start = data['datestart']
+        date_finish = data['datefinish']
+
+        section = Section.objects.all().get(pk = secid)
+        
+        new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start, date_finish = date_finish)
+               
+        print('La data que devuelve es: ' + str(data))
+        print('Sucessfully created new item')
+        return JsonResponse({"message":"Successfully created new item"})
