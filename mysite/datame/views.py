@@ -154,8 +154,6 @@ def CV_view(request):
         if request.method == "GET":
             data = request.GET
 
-            curriculum = []
-            sections = []
             items = []
             #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
             userId = data['userId']
@@ -164,14 +162,15 @@ def CV_view(request):
 
             # Ver mi CV
             if (dataScientistRecuperado != None):
-                curriculum = CV.objects.all().filter(owner = dataScientistRecuperado)
-                sections = Section.objects.all().filter(cv = curriculum[0])
+                curriculum = CV.objects.all().filter(owner = dataScientistRecuperado).first()
+                sections = Section.objects.all().filter(cv = curriculum)
                 for sec in sections:
                     sec_items = Item.objects.all().filter(section = sec)
-                    items.append(sec_items);
+                    data_sec_items = serializers.serialize('json', sec_items)
+                    items.append(data_sec_items);
             # Ver el CV de un Data scientist (como Company)
             else:
-                #companyRecuperado = Company.objects.all().get(user = userRecuperado)
+            #companyRecuperado = Company.objects.all().get(user = userRecuperado)
             #if (companyRecuperado != None):
                 dataScientistId = data['dataScientistId']
                 dataScientistUserRecuperado = User.objects.all().get(pk = dataScientistId)
@@ -183,5 +182,4 @@ def CV_view(request):
                     sec_items = Item.objects.all().filter(section = sec)
                     items.append(sec_items);
 
-            dataF = serializers.serialize('json', items)
-            return JsonResponse(dataF, safe=False)
+            return JsonResponse(items, safe=False)
