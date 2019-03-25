@@ -1,15 +1,12 @@
 from django.shortcuts import render
-import datetime
+import datetime, json, pytz, datetime
 from .models import *
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-import pytz, datetime
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-import json
 from http.client import HTTPResponse
 from django.core import serializers
 from django.contrib.auth.models import User
@@ -100,6 +97,7 @@ def File(request):
         print('Sucessfully created File')
         return JsonResponse({"message":"Successfully created new File"})
 
+
 @csrf_exempt
 def Bill_view(request):
     if request.method == "POST":
@@ -117,7 +115,7 @@ def Bill_view(request):
 
         print('Sucessfully created new bill')
         return JsonResponse({"message":"Successfully created new bill"})
-
+        
 @csrf_exempt
 def Offer_view(request):
         if request.method == "POST":
