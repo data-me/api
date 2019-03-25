@@ -6,6 +6,16 @@ from django.template.defaultfilters import default
 
 # Create your models here.
 
+class Company(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField('Name', max_length = 30)
+    description = models.TextField('Description', max_length = 50)
+    nif = models.CharField('NIF', max_length = 9)
+    logo = models.CharField('Logo URL', max_length = 30)
+
+    def __str__(self):
+        return self.name
+
 
 class DataScientist(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -36,6 +46,7 @@ class Offer(models.Model):
     currency = models.CharField('Currency type',max_length = 1, choices = CURRENCY_CHOICES)
     creation_date = models.DateTimeField(auto_now_add=True)
     limit_time = models.DateTimeField(blank=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
