@@ -6,6 +6,16 @@ from django.template.defaultfilters import default
 
 # Create your models here.
 
+class Company(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField('Name', max_length = 30)
+    description = models.TextField('Description', max_length = 50)
+    nif = models.CharField('NIF', max_length = 9)
+    logo = models.CharField('Logo URL', max_length = 30)
+
+    def __str__(self):
+        return self.name
+
 
 class DataScientist(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -30,12 +40,14 @@ class Offer(models.Model):
         ('2', '£')
     )
 
+
     title = models.CharField('Offer title', max_length = 80)
     description = models.TextField('Offer description')
     price_offered = models.FloatField('Price offered')
     currency = models.CharField('Currency type',max_length = 1, choices = CURRENCY_CHOICES)
     creation_date = models.DateTimeField(auto_now_add=True)
     limit_time = models.DateTimeField(blank=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -58,7 +70,7 @@ class Apply(models.Model):
 
     def __str__(self):
         return self.title
-
+    
 class Contract(models.Model):
 
     date_created = models.DateTimeField(blank=True)
@@ -67,9 +79,9 @@ class Contract(models.Model):
     accepted_company = models.BooleanField(default = True)
     expiration = models.IntegerField()
     dataScientist = models.ForeignKey(DataScientist, on_delete=models.CASCADE)
-    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
-
-
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE) 
+    apply = models.ForeignKey(Apply, null=True, blank=True, on_delete=models.CASCADE)
+    
     def __str__(self):
         cadena = self.offer.title + "//" + self.dataScientist.name
         return cadena
@@ -87,7 +99,7 @@ class Bill(models.Model):
     total = models.FloatField()
     date = models.DateTimeField(default=timezone.now)
     status = models.CharField('Status',max_length = 8, choices = STATUS_CHOICES)
-    contract = models.ForeignKey(Contract, default = "",on_delete=models.CASCADE)
+    contract = models.OneToOneField(Contract, null=True, on_delete=models.CASCADE)
     #user_plan = models.ForeignKey(user_plan, on_delete=models.CASCADE)
 
 
