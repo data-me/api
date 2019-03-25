@@ -82,6 +82,22 @@ def Contract_view(request):
         print('Sucessfully created contract')
         return JsonResponse({"message":"Successfully created new contract"})
 
+# Accept/Reject contract
+@csrf_exempt
+def Contract_actions_view(self, request, format=None):
+    if request.method == "POST":
+        data = request.POST
+        accepted_ds = bool(data['accepted_ds'])
+        contractid = data['contractid']
+
+        contract = Contract.objects.all().get(pk = contractid)
+        
+        # Creation of new offer
+        saved_contract = Contract.objects.save(contract, accepted_ds=accepted_ds)
+
+        print('Sucessfully created contract')
+        return JsonResponse({"message":"Successfully created new contract"})
+
 @csrf_exempt
 def File(request):
     if request.method == "POST":
@@ -177,8 +193,8 @@ def Offer_view(request):
             return JsonResponse(list(ofertas), safe=False)
 
 
-@csrf_exempt
-def CV_view(request):
+class CV_view(APIView):
+    def get(self, request, format=None):
         if request.method == "GET":
             data = request.GET
 
@@ -212,46 +228,62 @@ def CV_view(request):
 
             return JsonResponse(list(items), safe=False)
         
-        elif request.method == "POST":
+    def post(self, request, format=None):
+        try:
             data = request.POST
-            userid = data['userid']
-            user = DataScientist.objects.all().get(pk = userid)
-
+            user = DataScientist.objects.all().get(pk = request.user.id)
+            
             new_curriculum = CV.objects.create(owner=user)
-               
+            
             print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new curriculum')
             return JsonResponse({"message":"Successfully created new curriculum"})
+        except:
+            return JsonResponse({"message":"Sorry! Something went wrong..."})
 
-@csrf_exempt
-def section_view(request):
-    if request.method == "POST":
-        data = request.POST
-        secname = data['name']
-        cvid = data['cvid']
-        cv = CV.objects.all().get(pk = cvid)
-        
-        new_section = Section.objects.create(name = secname, cv = cv)
-               
-        print('La data que devuelve es: ' + str(data))
-        print('Sucessfully created new section')
-        return JsonResponse({"message":"Successfully created new section"})
+class Section_view(APIView):
+    def post(self, request, format=None):
+        try:
+            data = request.POST
+            cvid = data['cvid']
 
-@csrf_exempt
-def item_view(request):
-    if request.method == "POST":
-        data = request.POST
-        itemname = data['name']
-        secid = data['secid']
-        description = data['description']
-        entity = data['entity']
-        date_start = data['datestart']
-        date_finish = data['datefinish']
+            cv = CV.objects.all().get(pk = cvid)
+            logged_userid = request.user.id
 
-        section = Section.objects.all().get(pk = secid)
-        
-        new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start, date_finish = date_finish)
-               
-        print('La data que devuelve es: ' + str(data))
-        print('Sucessfully created new item')
-        return JsonResponse({"message":"Successfully created new item"})
+            if logged_userid == cv.owner.id:
+                secname = data['name']
+
+                new_section = Section.objects.create(name = secname, cv = cv)
+                    
+                print('La data que devuelve es: ' + str(data))
+                print('Sucessfully created new section')
+                return JsonResponse({"message":"Successfully created new section"})
+        except:
+            return JsonResponse({"message":"Sorry! Something went wrong..."})
+
+
+class Item_view(APIView):
+    def post(self, request, format=None):
+            try:
+                data = request.POST
+                
+                secid = data['secid']
+                section = Section.objects.all().get(pk = secid)
+
+                logged_userid = request.user.id
+
+                if logged_userid == section.cv.owner.id:
+                    date_start = data['datestart']
+                    date_finish = data['datefinish']
+                    if date_start < date_finish:
+                        itemname = data['name']
+                        description = data['description']
+                        entity = data['entity']
+                        
+                        new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start, date_finish = date_finish)
+                        
+                        print('La data que devuelve es: ' + str(data))
+                        print('Sucessfully created new item')
+                        return JsonResponse({"message":"Successfully created new item"})
+            except:
+                 return JsonResponse({"message":"Sorry! Something went wrong..."})

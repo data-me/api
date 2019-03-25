@@ -75,7 +75,7 @@ class Contract(models.Model):
 
     date_created = models.DateTimeField(blank=True)
     limit_date = models.DateTimeField(blank=True)
-    accepted_ds = models.BooleanField(default = False)
+    accepted_ds = models.BooleanField(default = None)
     accepted_company = models.BooleanField(default = True)
     expiration = models.IntegerField()
     dataScientist = models.ForeignKey(DataScientist, on_delete=models.CASCADE)
