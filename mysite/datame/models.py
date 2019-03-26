@@ -8,8 +8,8 @@ from django.template.defaultfilters import default
 
 
 class Message(models.Model):
-    receiver = models.OneToOneField(User, on_delete=models.CASCADE)
-    sender = models.OneToOneField(User, on_delete=models.CASCADE)
+    receiver = models.OneToOneField(User, related_name='reciever', on_delete=models.CASCADE)
+    sender = models.OneToOneField(User, related_name='sender', on_delete=models.CASCADE)
     title = models.CharField('Title', max_length = 30)
     body = models.TextField('Description', max_length = 100)
     def __str__(self):
