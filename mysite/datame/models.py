@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import *
 from django import forms
 from django.utils import timezone
 from django.template.defaultfilters import default
@@ -63,51 +63,6 @@ class Apply(models.Model):
 
     def __str__(self):
         return self.title
-
-class Contract(models.Model):
-
-    date_created = models.DateTimeField(blank=True)
-    limit_date = models.DateTimeField(blank=True)
-    accepted_ds = models.BooleanField(default = None)
-    accepted_company = models.BooleanField(default = True)
-    expiration = models.IntegerField()
-    dataScientist = models.ForeignKey(DataScientist, default="", on_delete=models.CASCADE)
-    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
-    apply = models.ForeignKey(Apply, null=True, blank=True, on_delete=models.CASCADE)
-
-    def __str__(self):
-        cadena = self.offer.title + "//" + self.dataScientist.name
-        return cadena
-
-class Bill(models.Model):
-
-    STATUS_CHOICES = (
-        ('PE', 'PENDING'),
-        ('AC', 'ACCEPTED'),
-        ('RE', 'REJECTED')
-    )
-
-    quantity = models.FloatField()
-    tax = models.FloatField()
-    total = models.FloatField()
-    date = models.DateTimeField(default=timezone.now)
-    status = models.CharField('Status',max_length = 8, choices = STATUS_CHOICES)
-    contract = models.OneToOneField(Contract, null=True, on_delete=models.CASCADE)
-    #user_plan = models.ForeignKey(user_plan, on_delete=models.CASCADE)
-
-
-    def __str__(self):
-        return self.status
-
-class File(models.Model):
-
-    name = models.CharField('Name', max_length = 80)
-    path = models.CharField('Path', max_length = 200)
-    apply = models.ForeignKey(Apply, on_delete=models.CASCADE)
-    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
 
 # Curriculum vitae
 class CV(models.Model):
