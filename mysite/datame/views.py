@@ -248,8 +248,6 @@ class CV_view(APIView):
             
             new_curriculum = CV.objects.create(owner=user)
             
-            print('La data que devuelve es: ' + str(data))
-            print('Sucessfully created new curriculum')
             return JsonResponse({"message":"Successfully created new curriculum"})
         except:
             return JsonResponse({"message":"Sorry! Something went wrong..."})
@@ -258,19 +256,15 @@ class Section_view(APIView):
     def post(self, request, format=None):
         try:
             data = request.POST
-            cvid = data['cvid']
+            secname = data['name']
 
-            cv = CV.objects.all().get(pk = cvid)
-            logged_userid = request.user.id
+            logged_user = DataScientist.objects.all().get(pk = request.user.id)
+            
+            cv = CV.objects.all().get(owner = logged_user)
 
-            if logged_userid == cv.owner.id:
-                secname = data['name']
-
-                new_section = Section.objects.create(name = secname, cv = cv)
-                    
-                print('La data que devuelve es: ' + str(data))
-                print('Sucessfully created new section')
-                return JsonResponse({"message":"Successfully created new section"})
+            new_section = Section.objects.create(name = secname, cv = cv)
+            
+            return JsonResponse({"message":"Successfully created new section"})
         except:
             return JsonResponse({"message":"Sorry! Something went wrong..."})
 
