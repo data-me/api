@@ -27,6 +27,7 @@ urlpatterns = [
     path('api/v1/offer/', Offer_view ,name='offer'),
     path('api/v1/apply/', Apply_view,name='apply'),
     path('api/v1/contract/', Contract_view,name='contract'),
+    path('api/v1/contract_actions/', Contract_actions_view.as_view()),
     path('api/v1/file/', File,name='file'),
     path('api/v1/helloworld', views.HelloWorld.as_view()),
     path('api/v1/cv/', CV_view.as_view()),
