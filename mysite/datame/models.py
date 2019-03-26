@@ -25,13 +25,6 @@ class DataScientist(models.Model):
     def __str__(self):
         return self.name
 
-class Company(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    name = models.CharField('Name', max_length = 30)
-
-    def __str__(self):
-        return self.name
-
 
 class Offer(models.Model):
     CURRENCY_CHOICES = (
@@ -70,7 +63,7 @@ class Apply(models.Model):
 
     def __str__(self):
         return self.title
-    
+
 class Contract(models.Model):
 
     date_created = models.DateTimeField(blank=True)
@@ -79,9 +72,9 @@ class Contract(models.Model):
     accepted_company = models.BooleanField(default = True)
     expiration = models.IntegerField()
     dataScientist = models.ForeignKey(DataScientist, default="", on_delete=models.CASCADE)
-    offer = models.ForeignKey(Offer, on_delete=models.CASCADE) 
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
     apply = models.ForeignKey(Apply, null=True, blank=True, on_delete=models.CASCADE)
-    
+
     def __str__(self):
         cadena = self.offer.title + "//" + self.dataScientist.name
         return cadena
