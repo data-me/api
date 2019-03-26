@@ -6,6 +6,16 @@ from django.template.defaultfilters import default
 
 # Create your models here.
 
+
+class Message(models.Model):
+    receiver = models.OneToOneField(User, on_delete=models.CASCADE)
+    sender = models.OneToOneField(User, on_delete=models.CASCADE)
+    title = models.CharField('Title', max_length = 30)
+    body = models.TextField('Description', max_length = 100)
+    def __str__(self):
+        return self.title
+
+
 class Company(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length = 30)
