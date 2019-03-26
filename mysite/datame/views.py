@@ -22,38 +22,60 @@ class LazyEncoder(DjangoJSONEncoder):
 
 # Create your views here.
 @csrf_exempt
+@api_view(['GET','POST'])
 def Apply_view(request):
     if request.method == "POST":
         data = request.POST
         title = data['title']
         description = data['description']
         date = datetime.datetime.utcnow()
-        dataScientist = DataScientist.objects.all().filter(user = request.user)
-        offer = data['offer']
+        dataScientist = DataScientist.objects.all().get(user = request.user)
+        offerId = data['offerId']
+        offer = Offer.objects.all().get(pk = offerId)
         #Aqu� pretendo hacer una restriccion comparando si el usuario logueado est� dentro de la lista de usuarios que han hecho apply
         #Sin embargo lo dejo comentado ya que no puedo probarlo
         #usuariosAplicados = Apply_model.objects.all().select_related("dataScientist")
         #if(not (dataScientist in usuariosAplicados)):
 
-        new_apply = Apply.objects.create(title=title, description=description, status=Apply_model.STATUS_CHOICES[0][1], date=date, dataScientist = dataScientist, offer = offer)
+        new_apply = Apply.objects.create(title=title, description=description, status=Apply.STATUS_CHOICES[0][1], date=date, dataScientist = dataScientist, offer = offer)
 
         print('Sucessfully created new apply')
         return JsonResponse({"message":"Successfully created new apply"})
     if request.method == "GET":
-        applys = []
-        data = request.GET
-        filtro = data['filtro']
-        #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
-        userId = data['userId']
-        userRecuperado = User.objects.all().get(pk = userId)
-        dataScientistRecuperado = DataScientist.objects.all().get(user = userRecuperado)
-        if (filtro == 'PE'):
-            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='PE').values()
-        if (filtro == 'AC'):
-            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='AC').values()
-        if (filtro == 'RE'):
-            applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='RE').values()
-        return JsonResponse(list(applys), safe=False)
+        
+        try:
+                thisCompany = Company.objects.all().get(user = request.user) 
+                offers = Offer.objects.all().filter(company = thisCompany).distinct()
+                applys = []
+                data = request.GET
+                filtro = data['filtro']
+                #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
+                if (filtro == 'PE'):
+                    for offer in offers:
+                        applysInOffer = Apply.objects.all().filter(offer = offer, status = 'PE').values()
+                        applys.extend(list(applysInOffer))
+                if (filtro == 'AC'):
+                    for offer in offers:
+                        applysInOffer = Apply.objects.all().filter(offer = offer, status = 'AC').values()
+                        applys.extend(list(applysInOffer))
+                if (filtro == 'RE'):
+                    for offer in offers:
+                        applysInOffer = Apply.objects.all().filter(offer = offer, status = 'RE').values()
+                        applys.extend(list(applysInOffer))
+                return JsonResponse(list(applys), safe=False) 
+        except:
+                dataScientistRecuperado = DataScientist.objects.all().get(user = request.user)
+                applys = []
+                data = request.GET
+                filtro = data['filtro']
+                #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
+                if (filtro == 'PE'):
+                    applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='PE').values()
+                if (filtro == 'AC'):
+                    applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='AC').values()
+                if (filtro == 'RE'):
+                    applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='RE').values()
+                return JsonResponse(list(applys), safe=False)
 
 @csrf_exempt
 def Contract_view(request):
