@@ -185,9 +185,9 @@ class CV_view(APIView):
     def post(self, request, format=None):
         try:
             data = request.POST
-            user = DataScientist.objects.all().get(pk = request.user.id)
+            logged_user = DataScientist.objects.all().get(pk = request.user.datascientist.id)            
             
-            new_curriculum = CV.objects.create(owner=user)
+            new_curriculum = CV.objects.create(owner=logged_user)
             
             print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new curriculum')
@@ -199,19 +199,15 @@ class Section_view(APIView):
     def post(self, request, format=None):
         try:
             data = request.POST
-            cvid = data['cvid']
+            secname = data['name']
 
-            cv = CV.objects.all().get(pk = cvid)
-            logged_userid = request.user.id
+            logged_user = DataScientist.objects.all().get(pk = request.user.datascientist.id)
+            
+            cv = CV.objects.all().get(owner = logged_user)
 
-            if logged_userid == cv.owner.id:
-                secname = data['name']
-
-                new_section = Section.objects.create(name = secname, cv = cv)
-                    
-                print('La data que devuelve es: ' + str(data))
-                print('Sucessfully created new section')
-                return JsonResponse({"message":"Successfully created new section"})
+            new_section = Section.objects.create(name = secname, cv = cv)
+            
+            return JsonResponse({"message":"Successfully created new section"})
         except:
             return JsonResponse({"message":"Sorry! Something went wrong..."})
 
@@ -226,18 +222,30 @@ class Item_view(APIView):
 
                 logged_userid = request.user.id
 
-                if logged_userid == section.cv.owner.id:
+                if logged_userid == section.cv.owner.user_id:
                     date_start = data['datestart']
                     date_finish = data['datefinish']
-                    if date_start < date_finish:
-                        itemname = data['name']
-                        description = data['description']
-                        entity = data['entity']
-                        
-                        new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start, date_finish = date_finish)
-                        
-                        print('La data que devuelve es: ' + str(data))
-                        print('Sucessfully created new item')
-                        return JsonResponse({"message":"Successfully created new item"})
+                    try:
+                        item_tosave = Item.objects.all().get(pk = data['itemid'])
+
+                        if date_start < date_finish:
+                            item_tosave.name = data['name']
+                            item_tosave.description = data['description']
+                            item_tosave.entity = data['entity']
+                            item_tosave.date_start = date_start
+                            item_tosave.date_finish = date_finish
+
+                            item_tosave.save()
+
+                            return JsonResponse({"message":"Successfully edited item"})
+                    except:
+                        if date_start < date_finish:
+                            itemname = data['name']
+                            description = data['description']
+                            entity = data['entity']
+                            
+                            new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start, date_finish = date_finish)
+
+                            return JsonResponse({"message":"Successfully created new item"})
             except:
-                 return JsonResponse({"message":"Sorry! Something went wrong..."})
+                return JsonResponse({"message":"Sorry! Something went wrong..."})
