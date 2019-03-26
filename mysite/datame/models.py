@@ -64,7 +64,7 @@ class Apply(models.Model):
     description = models.TextField('Apply description')
     date = models.DateTimeField(blank=True)
     status = models.CharField('Status',max_length = 8, choices = STATUS_CHOICES)
-    dataScientist = models.ForeignKey(DataScientist, on_delete=models.CASCADE)
+    dataScientist = models.ForeignKey(DataScientist, default="",on_delete=models.CASCADE)
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
 
 
@@ -78,7 +78,7 @@ class Contract(models.Model):
     accepted_ds = models.BooleanField(default = None)
     accepted_company = models.BooleanField(default = True)
     expiration = models.IntegerField()
-    dataScientist = models.ForeignKey(DataScientist, on_delete=models.CASCADE)
+    dataScientist = models.ForeignKey(DataScientist, default="", on_delete=models.CASCADE)
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE) 
     apply = models.ForeignKey(Apply, null=True, blank=True, on_delete=models.CASCADE)
     

@@ -83,20 +83,33 @@ def Contract_view(request):
         return JsonResponse({"message":"Successfully created new contract"})
 
 # Accept/Reject contract
-@csrf_exempt
-def Contract_actions_view(self, request, format=None):
-    if request.method == "POST":
-        data = request.POST
-        accepted_ds = bool(data['accepted_ds'])
-        contractid = data['contractid']
 
-        contract = Contract.objects.all().get(pk = contractid)
-        
-        # Creation of new offer
-        saved_contract = Contract.objects.save(contract, accepted_ds=accepted_ds)
+class Contract_actions_view(APIView):
+    def post(self, request, format=None):
+        try:
+            data = request.POST
+            contractid = data['contractid']
 
-        print('Sucessfully created contract')
-        return JsonResponse({"message":"Successfully created new contract"})
+            contract = Contract.objects.all().get(pk = contractid)
+            
+            logged_userid = request.user.id
+
+            if logged_userid == contract.apply.dataScientist.id and contract.accepted_ds == None:
+                accepted_ds = data['accepted_ds']
+
+                contract.accepted_ds = accepted_ds
+                contract.save()
+                
+                message = ""
+
+                if accepted_ds == 'False':
+                    message = "Successfully rejected contract"
+                else:
+                    message = "Successfully accepted contract"
+
+                return JsonResponse({"message":message})
+        except:
+             return JsonResponse({"message":"Sorry! Something went wrong..."})
 
 @csrf_exempt
 def File(request):
