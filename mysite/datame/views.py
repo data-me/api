@@ -39,8 +39,17 @@ def Message_view(request):
 
         print('Sucessfully created new message')
         return JsonResponse({"message":"Successfully created new message"})
-    
-                
+    if request.method == "GET":
+        data = request.GET
+        user = request.user
+        messages = []
+        try:
+            messages = Message.objects.all().filter(receiver = user).values()
+            print(messages)
+        except:
+            print("You have 0 messages")
+            
+        return JsonResponse(list(messages), safe=False)
 
 
 # Create your views here.
