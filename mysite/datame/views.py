@@ -12,6 +12,7 @@ from django.core import serializers
 from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
 from django import forms
+from statsmodels.sandbox.distributions.sppatch import expect
 
 class LazyEncoder(DjangoJSONEncoder):
     def default(self, obj):
@@ -170,6 +171,7 @@ def Bill_view(request):
         return JsonResponse(bills, safe=False)
         
 @csrf_exempt
+@api_view(['GET','POST'])
 def Offer_view(request):
         if request.method == "POST":
             data = request.POST
@@ -178,6 +180,7 @@ def Offer_view(request):
             price_offered = data['price_offered']
             currency = data['currency']
             limit_time = data['limit_time']
+            thisCompany = Company.objects.all().get(user = request.user)
 
             # Time management
             split_time = limit_time.split(',') # Split by comma what was sent from client
@@ -189,20 +192,24 @@ def Offer_view(request):
 
             # Creation of new offer
             new_offer = Offer.objects.create(title=title, description=description,
-                price_offered=float(price_offered), currency=currency, limit_time=date)
+                price_offered=float(price_offered), currency=currency, limit_time=date, company = thisCompany)
 
             print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new offer')
             return JsonResponse({"message":"Successfully created new offer"})
         if request.method == "GET":
             ofertas = []
-            date = datetime.datetime.utcnow()
-            ofertas = Offer.objects.all().filter(limit_time__gte = date).values()
-            
-                #else:
-                 #   company = Company_model.objects.get(user = request.user)
-                  #      if(company != None):
-                   #         ofertas = Company_model.objects.get(user = request.user).select_related("offers")
+            try:
+                thisCompany = Company.objects.all().get(user = request.user)
+                ofertas = Offer.objects.all().filter(company = thisCompany).values()
+            except:
+                date = datetime.datetime.utcnow()
+                ofertas = Offer.objects.all().filter(limit_time__gte = date).values()
+                
+                    #else:
+                     #   company = Company_model.objects.get(user = request.user)
+                      #      if(company != None):
+                       #         ofertas = Company_model.objects.get(user = request.user).select_related("offers")
             return JsonResponse(list(ofertas), safe=False)
 
 
