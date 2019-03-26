@@ -20,6 +20,29 @@ class LazyEncoder(DjangoJSONEncoder):
             return str(obj)
         return super().default(obj)
 
+
+@csrf_exempt
+@api_view(['GET','POST'])
+def Message_view(request):
+    if request.method == "POST":
+        data = request.POST
+        title = data['title']
+        body = data['body']
+        moment = datetime.datetime.utcnow()
+        #receiverId = User.objects.all().get(user = data['receiverId'])
+        receiverId = data['receiverId']
+        receiver = User.objects.all().get(pk = receiverId)
+        senderId = request.user
+        print(senderId)
+       
+        new_message = Message.objects.create(title=title, body=body, moment=moment, receiver=receiver, sender=senderId)
+
+        print('Sucessfully created new message')
+        return JsonResponse({"message":"Successfully created new message"})
+    
+                
+
+
 # Create your views here.
 @csrf_exempt
 @api_view(['GET','POST'])
