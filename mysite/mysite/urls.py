@@ -33,4 +33,5 @@ urlpatterns = [
     path('api/v1/cv/', CV_view.as_view()),
     path('api/v1/section/', Section_view.as_view()),
     path('api/v1/item/', Item_view.as_view()),
+    path('api/v1/company/', Company_view.as_view()),
 ]

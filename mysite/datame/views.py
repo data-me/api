@@ -12,6 +12,7 @@ from django.core import serializers
 from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
 from django import forms
+import ast
 
 class LazyEncoder(DjangoJSONEncoder):
     def default(self, obj):
@@ -244,7 +245,7 @@ class CV_view(APIView):
     def post(self, request, format=None):
         try:
             data = request.POST
-            user = DataScientist.objects.all().get(pk = request.user.id)
+            user = DataScientist.objects.all().get(pk = request.user.datascientist.id)
             
             new_curriculum = CV.objects.create(owner=user)
             
@@ -258,7 +259,7 @@ class Section_view(APIView):
             data = request.POST
             secname = data['name']
 
-            logged_user = DataScientist.objects.all().get(pk = request.user.id)
+            logged_user = DataScientist.objects.all().get(pk = request.user.datascientist.id)
             
             cv = CV.objects.all().get(owner = logged_user)
 
@@ -279,7 +280,7 @@ class Item_view(APIView):
 
                 logged_userid = request.user.id
 
-                if logged_userid == section.cv.owner.id:
+                if logged_userid == section.cv.owner.user_id:
                     date_start = data['datestart']
                     date_finish = data['datefinish']
                     if date_start < date_finish:
@@ -288,9 +289,7 @@ class Item_view(APIView):
                         entity = data['entity']
                         
                         new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start, date_finish = date_finish)
-                        
-                        print('La data que devuelve es: ' + str(data))
-                        print('Sucessfully created new item')
+
                         return JsonResponse({"message":"Successfully created new item"})
             except:
                  return JsonResponse({"message":"Sorry! Something went wrong..."})
