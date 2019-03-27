@@ -24,123 +24,131 @@ class LazyEncoder(DjangoJSONEncoder):
         return super().default(obj)
 
 
-@csrf_exempt
-@api_view(['GET','POST'])
-def Message_view(request):
-    if request.method == "POST":
-        data = request.POST
-        title = data['title']
-        body = data['body']
-        moment = datetime.datetime.utcnow()
-        #receiverId = User.objects.all().get(user = data['receiverId'])
-        receiverId = data['receiverId']
-        receiver = User.objects.all().get(pk = receiverId)
-        senderId = request.user
-        print(senderId)
-
-        new_message = Message.objects.create(title=title, body=body, moment=moment, receiver=receiver, sender=senderId)
-
-        print('Sucessfully created new message')
-        return JsonResponse({"message":"Successfully created new message"})
-    if request.method == "GET":
-        data = request.GET
-        user = request.user
-        messages = []
+class Message_view(APIView):
+    def post(self, request, format=None):
         try:
-            messages = Message.objects.all().filter(receiver = user).values()
-            print(messages)
+            data = request.POST
+            title = data['title']
+            body = data['body']
+            moment = datetime.datetime.utcnow()
+            #receiverId = User.objects.all().get(user = data['receiverId'])
+            receiverId = data['receiverId']
+            receiver = User.objects.all().get(pk = receiverId)
+            senderId = request.user
+            print(senderId)
+    
+            new_message = Message.objects.create(title=title, body=body, moment=moment, receiver=receiver, sender=senderId)
+    
+            print('Sucessfully created new message')
+            return JsonResponse({"message":"Successfully created new message"})
         except:
-            print("You have 0 messages")
-
-        return JsonResponse(list(messages), safe=False)
+            return JsonResponse({"message":"Oops, something went wrong"})
+    def get(self, request, format=None):
+        try:
+            data = request.GET
+            user = request.user
+            messages = []
+            try:
+                messages = Message.objects.all().filter(receiver = user).values()
+                print(messages)
+            except:
+                print("You have 0 messages")
+    
+            return JsonResponse(list(messages), safe=False)
+        except:
+            return JsonResponse({"message":"Oops, something went wrong"})
 
 
 # Create your views here.
-@csrf_exempt
-@api_view(['GET','POST'])
-def Apply_view(request):
-    if request.method == "POST":
-        data = request.POST
-        title = data['title']
-        description = data['description']
-        date = datetime.datetime.utcnow()
-        dataScientist = DataScientist.objects.all().get(user = request.user)
-        offerId = data['offerId']
-        offer = Offer.objects.all().get(pk = offerId)
-        applysInOffer = Apply.objects.all().filter(offer = offer)
-        for apply in applysInOffer:
-            if(apply.dataScientist.id == dataScientist.id):
-                return JsonResponse({"message":"DataScientist already applied"})
-        #Aqu� pretendo hacer una restriccion comparando si el usuario logueado est� dentro de la lista de usuarios que han hecho apply
-        #Sin embargo lo dejo comentado ya que no puedo probarlo
-        #usuariosAplicados = Apply_model.objects.all().select_related("dataScientist")
-        #if(not (dataScientist in usuariosAplicados)):
 
-        new_apply = Apply.objects.create(title=title, description=description, status='PE', date=date, dataScientist = dataScientist, offer = offer)
-
-        return JsonResponse({"message":"Successfully created new apply"})
-    if request.method == "GET":
-        user_logged = User.objects.all().get(pk = request.user.id)
-        if (user_logged.groups.filter(name='Company').exists()):
-                thisCompany = Company.objects.all().get(user = request.user)
-                offers = Offer.objects.all().filter(company = thisCompany).distinct()
-                applys = []
-                data = request.GET
-                filtro = data['filtro']
-                #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
-                if (filtro == 'PE'):
-                    for offer in offers:
-                        applysInOffer = Apply.objects.all().filter(offer = offer, status = 'PE').values()
-                        applys.extend(list(applysInOffer))
-                if (filtro == 'AC'):
-                    for offer in offers:
-                        applysInOffer = Apply.objects.all().filter(offer = offer, status = 'AC').values()
-                        applys.extend(list(applysInOffer))
-                if (filtro == 'RE'):
-                    for offer in offers:
-                        applysInOffer = Apply.objects.all().filter(offer = offer, status = 'RE').values()
-                        applys.extend(list(applysInOffer))
-                return JsonResponse(list(applys), safe=False)
-        elif(user_logged.groups.filter(name='DataScientist').exists()):
-                dataScientistRecuperado = DataScientist.objects.all().get(user = request.user)
-                applys = []
-                data = request.GET
-                filtro = data['filtro']
-                #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
-                if (filtro == 'PE'):
-                    applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='PE').values()
-                if (filtro == 'AC'):
-                    applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='AC').values()
-                if (filtro == 'RE'):
-                    applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='RE').values()
-                return JsonResponse(list(applys), safe=False)
+class Apply_view(APIView):
+    def post(self, request, format=None):
+        try:
+            data = request.POST
+            title = data['title']
+            description = data['description']
+            date = datetime.datetime.utcnow()
+            user_logged = User.objects.all().get(pk = request.user.id)
+            if (not user_logged.groups.filter(name='DataScientist').exists()):
+                return JsonResponse({"message":"Only DataScientist can apply"})
+            dataScientist = DataScientist.objects.all().get(user = request.user)
+            offerId = data['offerId']
+            offer = Offer.objects.all().get(pk = offerId)
+            applysInOffer = Apply.objects.all().filter(offer = offer)
+            for apply in applysInOffer:
+                if(apply.dataScientist.id == dataScientist.id):
+                    return JsonResponse({"message":"DataScientist already applied"})
+            new_apply = Apply.objects.create(title=title, description=description, status='PE', date=date, dataScientist = dataScientist, offer = offer)
+            return JsonResponse({"message":"Successfully created new apply"})
+        except:
+            return JsonResponse({"message":"Oops, something went wrong"})
+    def get(self, request, format=None):
+        try:
+            user_logged = User.objects.all().get(pk = request.user.id)
+            if (user_logged.groups.filter(name='Company').exists()):
+                    thisCompany = Company.objects.all().get(user = request.user)
+                    offers = Offer.objects.all().filter(company = thisCompany).distinct()
+                    applys = []
+                    data = request.GET
+                    filtro = data['filtro']
+                    #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
+                    if (filtro == 'PE'):
+                        for offer in offers:
+                            applysInOffer = Apply.objects.all().filter(offer = offer, status = 'PE').values()
+                            applys.extend(list(applysInOffer))
+                    if (filtro == 'AC'):
+                        for offer in offers:
+                            applysInOffer = Apply.objects.all().filter(offer = offer, status = 'AC').values()
+                            applys.extend(list(applysInOffer))
+                    if (filtro == 'RE'):
+                        for offer in offers:
+                            applysInOffer = Apply.objects.all().filter(offer = offer, status = 'RE').values()
+                            applys.extend(list(applysInOffer))
+                    return JsonResponse(list(applys), safe=False)
+            elif(user_logged.groups.filter(name='DataScientist').exists()):
+                    dataScientistRecuperado = DataScientist.objects.all().get(user = request.user)
+                    applys = []
+                    data = request.GET
+                    filtro = data['filtro']
+                    #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
+                    if (filtro == 'PE'):
+                        applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='PE').values()
+                    if (filtro == 'AC'):
+                        applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='AC').values()
+                    if (filtro == 'RE'):
+                        applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='RE').values()
+                    return JsonResponse(list(applys), safe=False)
+        except:
+            return JsonResponse({"message":"Oops, something went wrong"})
 
 # Accept/Reject contract
 
-class AcceptApply_view(APIView):
+class AcceptApply_view(APIView):   
     def post(self, request, format=None):
-        user_logged = User.objects.all().get(pk = request.user.id)
-        if (user_logged.groups.filter(name='Company').exists()):
-            company = Company.objects.all().get(user = user_logged)
-            data = request.POST
-            idApply = data['idApply']
-            apply = Apply.objects.all().get(pk = idApply)
-            if(apply.offer.company == company):
-                if (apply.offer.finished == True):
-                    res = JsonResponse({"message":"Offer has been already accepted"})
+        try:
+            user_logged = User.objects.all().get(pk = request.user.id)
+            if (user_logged.groups.filter(name='Company').exists()):
+                company = Company.objects.all().get(user = user_logged)
+                data = request.POST
+                idApply = data['idApply']
+                apply = Apply.objects.all().get(pk = idApply)
+                if(apply.offer.company == company):
+                    if (apply.offer.finished == True):
+                        res = JsonResponse({"message":"Offer has been already accepted"})
+                    else:
+                        applysToUpdate = Apply.objects.all().filter(offer = apply.offer).update(status = 'RE')
+                        apply.status = 'AC'
+                        apply.save()
+                        apply.offer.finished = True
+                        apply.offer.save()
+                        res = JsonResponse(model_to_dict(apply), safe=False)
                 else:
-                    applysToUpdate = Apply.objects.all().filter(offer = apply.offer).update(status = 'RE')
-                    apply.status = 'AC'
-                    apply.save()
-                    apply.offer.finished = True
-                    apply.offer.save()
-                    res = JsonResponse(model_to_dict(apply), safe=False)
+                   res = JsonResponse({"message":"The company doesnt own the offer"})
             else:
-               res = JsonResponse({"message":"The company doesnt own the offer"})
-        else:
-            res = JsonResponse({"message":"Only companies can update an apply"})
-        return res
-
+                res = JsonResponse({"message":"Only companies can update an apply"})
+            return res
+        except:
+                return JsonResponse({"message":"Oops, something went wrong"})
 
 class Offer_view(APIView):
     def get(self, request, format=None):
@@ -190,7 +198,6 @@ class Offer_view(APIView):
             print('Sucessfully created new offer')
             return JsonResponse({"message":"Successfully created new offer"})
         except Exception as e:
-            print('execeptio', e)
             return JsonResponse({"message":"Sorry! Something went wrong..."})
 
 
