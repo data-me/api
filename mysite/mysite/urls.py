@@ -27,9 +27,9 @@ urlpatterns = [
     path('api/v1/apply/', Apply_view,name='apply'),
     path('api/v1/accept/', AcceptApply_view.as_view(),name='accept apply'),
     path('api/v1/helloworld', views.HelloWorld.as_view()),
-    path('api/v1/cv/', CV_view.as_view()),
-    path('api/v1/message/', Message_view, name='mesagge'),
-    path('api/v1/section/', Section_view.as_view()),
+    path('api/v1/cv', CV_view.as_view()),
+    path('api/v1/message', Message_view, name='mesagge'),
+    path('api/v1/section', Section_view.as_view()),
     path('api/v1/section_name', Create_section_name.as_view()),
-    path('api/v1/item/', Item_view.as_view()),
+    path('api/v1/item', Item_view.as_view()),
 ]
