@@ -112,11 +112,27 @@ def Apply_view(request):
 
 # Accept/Reject contract
 
+class Offer_view(APIView):
+    def get(self, request, format=None):
+        # List without filter
+        if request.method == "GET":
+            ofertas = []
+            try:
+                print('hi company')
+                thisCompany = Company.objects.all().get(user = request.user)
+                # All offers instead only those who don't have an applicant
+                ofertas = Offer.objects.all().filter(company = thisCompany).values()
+            except:
+                print('hi datascientist')
+                date = datetime.datetime.utcnow()
+                # All offers whos time has not come yet, have to filter it doesn't have an applicant yet
+                ofertas = Offer.objects.all().filter(limit_time__gte = date).values()
+            print(list(ofertas))
+            return JsonResponse(list(ofertas), safe=False)
+            #return JsonResponse({"message":"Sorry! Something went wrong..."})
 
 
-@csrf_exempt
-@api_view(['GET','POST'])
-def Offer_view(request):
+    def post(self, request, format=None):
         if request.method == "POST":
             data = request.POST
             title = data['title']
@@ -141,20 +157,6 @@ def Offer_view(request):
             print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new offer')
             return JsonResponse({"message":"Successfully created new offer"})
-        if request.method == "GET":
-            ofertas = []
-            try:
-                thisCompany = Company.objects.all().get(user = request.user)
-                ofertas = Offer.objects.all().filter(company = thisCompany).values()
-            except:
-                date = datetime.datetime.utcnow()
-                ofertas = Offer.objects.all().filter(limit_time__gte = date).values()
-
-                    #else:
-                     #   company = Company_model.objects.get(user = request.user)
-                      #      if(company != None):
-                       #         ofertas = Company_model.objects.get(user = request.user).select_related("offers")
-            return JsonResponse(list(ofertas), safe=False)
 
 
 class CV_view(APIView):

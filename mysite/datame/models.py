@@ -50,6 +50,7 @@ class Offer(models.Model):
     currency = models.CharField('Currency type',max_length = 1, choices = CURRENCY_CHOICES)
     creation_date = models.DateTimeField(auto_now_add=True)
     limit_time = models.DateTimeField(blank=True)
+    finished = models.BooleanField(default=False)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
