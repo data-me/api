@@ -295,15 +295,41 @@ class Item_view(APIView):
                 data = request.POST
 
                 secid = data['secid']
+                
                 section = Section.objects.all().get(pk = secid)
-
-                logged_userid = request.user.id
+            
+                logged_userid = request.user.datascientist.id
 
                 if logged_userid == section.cv.owner.user_id:
                     date_start = data['datestart']
-                    date_finish = data['datefinish']
+                    date_finish = request.post('datefinish')
+                    
+                    if date_finish != None: 
+                        if date_start < date_finish:
+                        
+                            try:
+                                item_tosave = Item.objects.all().get(pk = data['itemid'])
 
-                    if date_start < date_finish:
+                                item_tosave.name = data['name']
+                                item_tosave.description = data['description']
+                                item_tosave.entity = data['entity']
+                                item_tosave.date_start = date_start
+                                item_tosave.date_finish = date_finish
+
+                                item_tosave.save()
+
+                                return JsonResponse({"message":"Successfully edited item"})
+                            except:
+                                itemname = data['name']
+                                description = data['description']
+                                entity = data['entity']
+
+                                new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start, date_finish = date_finish)
+
+                                return JsonResponse({"message":"Successfully created new item"})
+                        else:
+                            return JsonResponse({"message":"Sorry, the starting date must be before the ending date!"})
+                    else:
                         try:
                             item_tosave = Item.objects.all().get(pk = data['itemid'])
 
@@ -311,7 +337,6 @@ class Item_view(APIView):
                             item_tosave.description = data['description']
                             item_tosave.entity = data['entity']
                             item_tosave.date_start = date_start
-                            item_tosave.date_finish = date_finish
 
                             item_tosave.save()
 
@@ -321,10 +346,8 @@ class Item_view(APIView):
                             description = data['description']
                             entity = data['entity']
 
-                            new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start, date_finish = date_finish)
+                            new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start)
 
                             return JsonResponse({"message":"Successfully created new item"})
-                    else:
-                        return JsonResponse({"message":"Sorry, the starting date must be before the ending date!"})
             except:
                 return JsonResponse({"message":"Sorry! Something went wrong..."})
