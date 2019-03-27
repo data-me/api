@@ -10,6 +10,7 @@ from rest_framework import status
 from http.client import HTTPResponse
 from django.core import serializers
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 from django.core.serializers.json import DjangoJSONEncoder
 from django import forms
 from statsmodels.sandbox.distributions.sppatch import expect
@@ -34,7 +35,7 @@ def Message_view(request):
         receiver = User.objects.all().get(pk = receiverId)
         senderId = request.user
         print(senderId)
-       
+
         new_message = Message.objects.create(title=title, body=body, moment=moment, receiver=receiver, sender=senderId)
 
         print('Sucessfully created new message')
@@ -48,7 +49,7 @@ def Message_view(request):
             print(messages)
         except:
             print("You have 0 messages")
-            
+
         return JsonResponse(list(messages), safe=False)
 
 
@@ -74,9 +75,9 @@ def Apply_view(request):
         print('Sucessfully created new apply')
         return JsonResponse({"message":"Successfully created new apply"})
     if request.method == "GET":
-        
+
         try:
-                thisCompany = Company.objects.all().get(user = request.user) 
+                thisCompany = Company.objects.all().get(user = request.user)
                 offers = Offer.objects.all().filter(company = thisCompany).distinct()
                 applys = []
                 data = request.GET
@@ -94,7 +95,7 @@ def Apply_view(request):
                     for offer in offers:
                         applysInOffer = Apply.objects.all().filter(offer = offer, status = 'RE').values()
                         applys.extend(list(applysInOffer))
-                return JsonResponse(list(applys), safe=False) 
+                return JsonResponse(list(applys), safe=False)
         except:
                 dataScientistRecuperado = DataScientist.objects.all().get(user = request.user)
                 applys = []
@@ -112,7 +113,7 @@ def Apply_view(request):
 # Accept/Reject contract
 
 
-        
+
 @csrf_exempt
 @api_view(['GET','POST'])
 def Offer_view(request):
@@ -148,7 +149,7 @@ def Offer_view(request):
             except:
                 date = datetime.datetime.utcnow()
                 ofertas = Offer.objects.all().filter(limit_time__gte = date).values()
-                
+
                     #else:
                      #   company = Company_model.objects.get(user = request.user)
                       #      if(company != None):
@@ -160,44 +161,39 @@ class CV_view(APIView):
     def get(self, request, format=None):
         if request.method == "GET":
             data = request.GET
-
             items = []
-            #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
-            userId = data['userId']
-            userRecuperado = User.objects.all().get(pk = userId)
-            dataScientistRecuperado = DataScientist.objects.all().get(user = userRecuperado)
+            logged_user = User.objects.all().get(pk = request.user.id)
 
-            # Ver mi CV
-            if (dataScientistRecuperado != None):
+            #Ver mi CV
+            if(logged_user.groups == [DataScientist]):
+                dataScientistRecuperado = DataScientist.objects.all().get(user = logged_user)
                 curriculum = CV.objects.all().filter(owner = dataScientistRecuperado).first()
-                sections = Section.objects.all().filter(cv = curriculum)
+                sections = Section.objects.all().filter(cv = curriculum).values()
                 for sec in sections:
-                    sec_items = Item.objects.all().filter(section = sec)
+                    sec_items = Item.objects.all().filter(section = sec).values()
                     data_sec_items = serializers.serialize('json', sec_items)
                     items.append(data_sec_items)
             # Ver el CV de un Data scientist (como Company)
-            else:
-            #companyRecuperado = Company.objects.all().get(user = userRecuperado)
-            #if (companyRecuperado != None):
+            if(logged_user.groups == [Company]):
+                #companyRecuperado = Company.objects.all().get(user = logged_user)
                 dataScientistId = data['dataScientistId']
                 dataScientistUserRecuperado = User.objects.all().get(pk = dataScientistId)
                 scientist = DataScientist.objects.all().get(user = dataScientistUserRecuperado)
-
-                curriculum = CV.objects.all().filter(owner = scientist)
-                sections = Section.objects.all().filter(cv = curriculum[0])
+                curriculum = CV.objects.all().filter(owner = scientist).first()
+                sections = Section.objects.all().filter(cv = curriculum).values()
                 for sec in sections:
-                    sec_items = Item.objects.all().filter(section = sec)
+                    sec_items = Item.objects.all().filter(section = sec).values()
                     items.append(sec_items)
 
             return JsonResponse(list(items), safe=False)
-        
+
     def post(self, request, format=None):
         try:
             data = request.POST
-            logged_user = DataScientist.objects.all().get(pk = request.user.datascientist.id)            
-            
+            logged_user = DataScientist.objects.all().get(pk = request.user.datascientist.id)
+
             new_curriculum = CV.objects.create(owner=logged_user)
-            
+
             print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new curriculum')
             return JsonResponse({"message":"Successfully created new curriculum"})
@@ -209,11 +205,11 @@ class Create_section_name(APIView):
         try:
             if request.user.is_superuser or request.user.is_staff:
                 data = request.POST
-                
+
                 new_section_name = Section_name.objects.create(name = data['name'])
 
                 return JsonResponse({"message":"Successfully created new section name"})
-            
+
             else:
                 return JsonResponse({"message":"You do not have permission to perform this action"})
         except:
@@ -227,11 +223,11 @@ class Section_view(APIView):
             sec = Section_name.objects.all().get(name = data['name'])
 
             logged_user = DataScientist.objects.all().get(pk = request.user.datascientist.id)
-            
+
             cv = CV.objects.all().get(owner = logged_user)
 
             new_section = Section.objects.create(name = sec, cv = cv)
-            
+
             return JsonResponse({"message":"Successfully created new section"})
         except:
             return JsonResponse({"message":"Sorry! Something went wrong..."})
@@ -241,7 +237,7 @@ class Item_view(APIView):
     def post(self, request, format=None):
             try:
                 data = request.POST
-                
+
                 secid = data['secid']
                 section = Section.objects.all().get(pk = secid)
 
@@ -250,7 +246,7 @@ class Item_view(APIView):
                 if logged_userid == section.cv.owner.user_id:
                     date_start = data['datestart']
                     date_finish = data['datefinish']
-                    
+
                     if date_start < date_finish:
                         try:
                             item_tosave = Item.objects.all().get(pk = data['itemid'])
@@ -268,7 +264,7 @@ class Item_view(APIView):
                             itemname = data['name']
                             description = data['description']
                             entity = data['entity']
-                            
+
                             new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start, date_finish = date_finish)
 
                             return JsonResponse({"message":"Successfully created new item"})
