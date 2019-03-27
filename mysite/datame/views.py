@@ -299,8 +299,8 @@ class Item_view(APIView):
                 section = Section.objects.all().get(pk = secid)
             
                 logged_userid = request.user.datascientist.id
-
-                if logged_userid == section.cv.owner.user_id:
+                
+                if logged_userid == section.cv.owner.id:
 
                     date_start = data['datestart']
                     date_finish = request.POST.get('datefinish')
