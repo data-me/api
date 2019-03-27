@@ -15,6 +15,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django import forms
 from statsmodels.sandbox.distributions.sppatch import expect
 from django.forms.models import model_to_dict
+from django.db.models import Q
 
 class LazyEncoder(DjangoJSONEncoder):
     def default(self, obj):
@@ -142,23 +143,28 @@ class AcceptApply_view(APIView):
 class Offer_view(APIView):
     def get(self, request, format=None):
         # List without filter
-        if request.method == "GET":
-            ofertas = []
-            try:
-                print('hi company')
-                thisCompany = Company.objects.all().get(user = request.user)
-                # All offers instead only those who don't have an applicant
-                ofertas = Offer.objects.all().filter(company = thisCompany).values()
-            except:
-                print('hi datascientist')
+        try:
+            data = request.GET
+            print(data['search'])
+            if data['search']:
                 date = datetime.datetime.utcnow()
-                # All offers whos time has not come yet, have to filter it doesn't have an applicant yet
-                ofertas = Offer.objects.all().filter(limit_time__gte = date).values()
-            print(list(ofertas))
-            return JsonResponse(list(ofertas), safe=False)
-            #return JsonResponse({"message":"Sorry! Something went wrong..."})
+                ofertas = Offer.objects.filter(Q(title__contains = data['search']) | Q(description__contains = data['search']), limit_time__gte = date, finished=False).values()
+                return JsonResponse(list(ofertas), safe=False)
+            else:
+                ofertas = []
+                try:
+                    thisCompany = Company.objects.all().get(user = request.user)
+                    # All offers instead only those who don't have an applicant
+                    ofertas = Offer.objects.all().filter(company = thisCompany).values()
+                except:
+                    date = datetime.datetime.utcnow()
+                    # All offers whos time has not come yet, have to filter it doesn't have an applicant yet
+                    ofertas = Offer.objects.all().filter(limit_time__gte = date, finished=False).values()
+                return JsonResponse(list(ofertas), safe=False)
+        except:
+            return JsonResponse({"message":"Sorry! Something went wrong..."})
     def post(self, request, format=None):
-        if request.method == "POST":
+        try:
             data = request.POST
             title = data['title']
             description = data['description']
@@ -177,11 +183,13 @@ class Offer_view(APIView):
 
             # Creation of new offer
             new_offer = Offer.objects.create(title=title, description=description,
-                price_offered=float(price_offered), currency=currency, limit_time=date, company = thisCompany)
+                price_offered=float(price_offered), currency=currency, limit_time=date, finished = False, company = thisCompany)
 
             print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new offer')
             return JsonResponse({"message":"Successfully created new offer"})
+        except:
+            return JsonResponse({"message":"Sorry! Something went wrong..."})
 
 
 class Company_view(APIView):
