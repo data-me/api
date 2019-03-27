@@ -76,7 +76,7 @@ def Apply_view(request):
         #usuariosAplicados = Apply_model.objects.all().select_related("dataScientist")
         #if(not (dataScientist in usuariosAplicados)):
 
-        new_apply = Apply.objects.create(title=title, description=description, status=Apply.STATUS_CHOICES[0][1], date=date, dataScientist = dataScientist, offer = offer)
+        new_apply = Apply.objects.create(title=title, description=description, status='PE', date=date, dataScientist = dataScientist, offer = offer)
 
         return JsonResponse({"message":"Successfully created new apply"})
     if request.method == "GET":
@@ -126,12 +126,14 @@ class AcceptApply_view(APIView):
             idApply = data['idApply']
             apply = Apply.objects.all().get(pk = idApply)
             if(apply.offer.company == company):
-                if (Apply.objects.all().filter(offer = apply.offer,status = 'AC').exists()):
+                if (apply.offer.finished == True):
                     res = JsonResponse({"message":"Offer has been already accepted"})
                 else:
                     applysToUpdate = Apply.objects.all().filter(offer = apply.offer).update(status = 'RE')
                     apply.status = 'AC'
                     apply.save()
+                    apply.offer.finished = True
+                    apply.offer.save()
                     res = JsonResponse(model_to_dict(apply), safe=False)
             else:
                res = JsonResponse({"message":"The company doesnt own the offer"})
