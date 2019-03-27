@@ -182,6 +182,27 @@ def Offer_view(request):
             return JsonResponse(list(ofertas), safe=False)
 
 
+class Company_view(APIView):
+    def get(self, request, format=None):
+        if request.method == "GET":
+            data = request.GET
+            logged_user = User.objects.all().get(pk = request.user.id)
+            print('logged_user: ' + str(logged_user))
+            #company = []
+            try:
+                    companyRecuperada = Company.objects.all().get(user = logged_user)
+                    thiscompany = Company.objects.all().filter(user = logged_user).values()
+            except:
+                    companyId = data['companyId']
+                    companyUserRecuperado = User.objects.all().get(pk = companyId)
+                    print('company user recuperada: ' + str(companyUserRecuperado))
+                    thiscompany = Company.objects.all().filter(user = companyUserRecuperado).values()
+                    print('company recuperada: ' + str(thiscompany))
+
+
+            return JsonResponse(list(thiscompany), safe=False)
+
+
 class CV_view(APIView):
     def get(self, request, format=None):
         if request.method == "GET":
