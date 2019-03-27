@@ -21,7 +21,7 @@ class Company(models.Model):
     name = models.CharField('Name', max_length = 30)
     description = models.TextField('Description', max_length = 50)
     nif = models.CharField('NIF', max_length = 9)
-    logo = models.CharField('Logo URL', max_length = 30)
+    logo = models.URLField('Logo URL')
 
     def __str__(self):
         return self.name
@@ -51,6 +51,8 @@ class Offer(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     limit_time = models.DateTimeField(blank=True)
     finished = models.BooleanField(default=False)
+    files = models.URLField()
+    contract = models.TextField('Contract')
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
 
     def __str__(self):
