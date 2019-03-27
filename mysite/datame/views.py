@@ -195,17 +195,33 @@ class CV_view(APIView):
         except:
             return JsonResponse({"message":"Sorry! Something went wrong..."})
 
+class Create_section_name(APIView):
+    def post(self, request, format=None):
+        try:
+            if request.user.is_superuser or request.user.is_staff:
+                data = request.POST
+                
+                new_section_name = Section_name.objects.create(name = data['name'])
+
+                return JsonResponse({"message":"Successfully created new section name"})
+            
+            else:
+                return JsonResponse({"message":"You do not have permission to perform this action"})
+        except:
+            return JsonResponse({"message":"Sorry! Something went wrong..."})
+
+
 class Section_view(APIView):
     def post(self, request, format=None):
         try:
             data = request.POST
-            secname = data['name']
+            sec = Section_name.objects.all().get(name = data['name'])
 
             logged_user = DataScientist.objects.all().get(pk = request.user.datascientist.id)
             
             cv = CV.objects.all().get(owner = logged_user)
 
-            new_section = Section.objects.create(name = secname, cv = cv)
+            new_section = Section.objects.create(name = sec, cv = cv)
             
             return JsonResponse({"message":"Successfully created new section"})
         except:
@@ -225,10 +241,11 @@ class Item_view(APIView):
                 if logged_userid == section.cv.owner.user_id:
                     date_start = data['datestart']
                     date_finish = data['datefinish']
-                    try:
-                        item_tosave = Item.objects.all().get(pk = data['itemid'])
+                    
+                    if date_start < date_finish:
+                        try:
+                            item_tosave = Item.objects.all().get(pk = data['itemid'])
 
-                        if date_start < date_finish:
                             item_tosave.name = data['name']
                             item_tosave.description = data['description']
                             item_tosave.entity = data['entity']
@@ -238,8 +255,7 @@ class Item_view(APIView):
                             item_tosave.save()
 
                             return JsonResponse({"message":"Successfully edited item"})
-                    except:
-                        if date_start < date_finish:
+                        except:
                             itemname = data['name']
                             description = data['description']
                             entity = data['entity']
@@ -247,5 +263,7 @@ class Item_view(APIView):
                             new_item = Item.objects.create(name = itemname, section = section, description = description, entity = entity, date_start = date_start, date_finish = date_finish)
 
                             return JsonResponse({"message":"Successfully created new item"})
+                    else:
+                        return JsonResponse({"message":"Sorry, the starting date must be before the ending date!"})
             except:
                 return JsonResponse({"message":"Sorry! Something went wrong..."})

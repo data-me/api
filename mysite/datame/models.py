@@ -6,7 +6,6 @@ from django.template.defaultfilters import default
 
 # Create your models here.
 
-
 class Message(models.Model):
     receiver = models.OneToOneField(User, related_name='receiver', on_delete=models.CASCADE)
     sender = models.OneToOneField(User, related_name='sender', on_delete=models.CASCADE)
@@ -82,13 +81,19 @@ class CV(models.Model):
     def __str__(self):
         return self.owner.name
 
-# Sections of a curriculum
-class Section(models.Model):
-    name = models.CharField("Section name", max_length = 50)
-    cv = models.ForeignKey("datame.CV", on_delete = models.CASCADE, related_name = 'sections')
+class Section_name(models.Model):
+    name = models.CharField("Name", max_length=50)
 
     def __str__(self):
         return self.name
+
+# Sections of a curriculum
+class Section(models.Model):
+    name = models.ForeignKey("datame.Section_name", on_delete = models.CASCADE, related_name = 'section_name')
+    cv = models.ForeignKey("datame.CV", on_delete = models.CASCADE, related_name = 'sections')
+
+    def __str__(self):
+        return self.name.name
 
 # Items of a section
 class Item(models.Model):
