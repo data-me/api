@@ -16,6 +16,7 @@ from django import forms
 from statsmodels.sandbox.distributions.sppatch import expect
 from django.forms.models import model_to_dict
 from django.db.models import Q
+from django.contrib.auth.models import Group,Permission
 
 class LazyEncoder(DjangoJSONEncoder):
     def default(self, obj):
@@ -361,3 +362,33 @@ class Item_view(APIView):
                             return JsonResponse({"message":"Successfully created new item"})
             except:
                 return JsonResponse({"message":"Sorry! Something went wrong..."})
+            
+def populate(request):
+    
+   company = Group.objects.create(name='Company')
+   dataScientist = Group.objects.create(name='DataScientist')
+   
+   admin = User.objects.create_user('admin', email='lennon@thebeatles.com', password='admin', is_staff=True)
+   permissions = Permission.objects.all()
+   for p in permissions:
+     admin.user_permissions.add(p) 
+   data1 = User.objects.create_user(username='data1',email='data1@beatles.com',password='123456data1')
+   data1.groups.add(dataScientist)
+   
+   data2 = User.objects.create_user(username='data2',email='data2@beatles.com',password='123456data2')
+   data2.groups.add(dataScientist)
+   
+   company1 = User.objects.create_user(username='company1',email='company1@beatles.com',password='123456com1')
+   company1.groups.add(company)
+   
+   company2 = User.objects.create_user(username='company2',email='company2@beatles.com',password='123456com2')
+   company2.groups.add(company)
+   
+   dataScientist1 = DataScientist.objects.create(user = data1,name = "DataScientist 1",surname = "DS1")
+   dataScientist2 = DataScientist.objects.create(user = data2,name = "DataScientist 2",surname = "DS2")
+   
+   company01 = Company.objects.create(user = company1, name = 'Company 1', description = 'Description 1',nif = 'nif1', logo = 'www.company1.com')
+   company02 = Company.objects.create(user = company2, name = 'Company 2', description = 'Description 2',nif = 'nif2', logo = 'www.company2.com')
+   
+   return JsonResponse({'message': 'DB populated'})
+        
