@@ -306,11 +306,12 @@ class Item_view(APIView):
                 section = Section.objects.all().get(pk = secid)
             
                 logged_userid = request.user.datascientist.id
+                
+                if logged_userid == section.cv.owner.id:
 
-                if logged_userid == section.cv.owner.user_id:
                     date_start = data['datestart']
-                    date_finish = request.post('datefinish')
-                    
+                    date_finish = request.POST.get('datefinish')
+
                     if date_finish != None: 
                         if date_start < date_finish:
                         
@@ -338,6 +339,7 @@ class Item_view(APIView):
                             return JsonResponse({"message":"Sorry, the starting date must be before the ending date!"})
                     else:
                         try:
+                            print('olawenas')
                             item_tosave = Item.objects.all().get(pk = data['itemid'])
 
                             item_tosave.name = data['name']
@@ -349,6 +351,7 @@ class Item_view(APIView):
 
                             return JsonResponse({"message":"Successfully edited item"})
                         except:
+                            print('olawenas')
                             itemname = data['name']
                             description = data['description']
                             entity = data['entity']
