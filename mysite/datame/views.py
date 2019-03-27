@@ -183,8 +183,8 @@ class Offer_view(APIView):
 
             # Creation of new offer
             new_offer = Offer.objects.create(title=title, description=description,
-                price_offered=float(price_offered), currency=currency, limit_time=date, finished = False, company = thisCompany)
-
+                price_offered=float(price_offered), currency=currency, limit_time=date, company = thisCompany)
+            
             print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new offer')
             return JsonResponse({"message":"Successfully created new offer"})
