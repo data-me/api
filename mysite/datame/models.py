@@ -35,7 +35,6 @@ class DataScientist(models.Model):
     def __str__(self):
         return self.name
 
-
 class Offer(models.Model):
     CURRENCY_CHOICES = (
         ('0', '€'),

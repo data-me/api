@@ -7,3 +7,4 @@ venv/*
 .project
 .pydevproject
 mysite/manage.py
+.vscode

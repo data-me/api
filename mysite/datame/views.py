@@ -146,7 +146,7 @@ class Offer_view(APIView):
     def get(self, request, format=None):
         try:
             data = request.GET
-            if data['search']:
+            if data.get('search') != None:
                 date = datetime.datetime.utcnow()
                 ofertas = Offer.objects.filter(Q(title__contains = data['search']) | Q(description__contains = data['search']), limit_time__gte = date, finished=False).values()
                 return JsonResponse(list(ofertas), safe=False)
@@ -171,8 +171,9 @@ class Offer_view(APIView):
             price_offered = data['price_offered']
             currency = data['currency']
             limit_time = data['limit_time']
+            contract = data['contract']
+            files = data['files']
             thisCompany = Company.objects.all().get(user = request.user)
-
             # Time management
             split_time = limit_time.split(',') # Split by comma what was sent from client
             split_time = list(map(int, split_time)) # Convert from list of string to list of integers
@@ -182,13 +183,14 @@ class Offer_view(APIView):
                     split_time[2], split_time[3], split_time[4], split_time[5], split_time[6], pytz.UTC)
 
             # Creation of new offer
-            new_offer = Offer.objects.create(title=title, description=description,
-                price_offered=float(price_offered), currency=currency, limit_time=date, company = thisCompany)
+
+            new_offer = Offer.objects.create(title=title, description=description, price_offered=float(price_offered), currency=currency, limit_time=date, contract=contract, files=files, company = thisCompany)
             
             print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new offer')
             return JsonResponse({"message":"Successfully created new offer"})
-        except:
+        except Exception as e:
+            print('execeptio', e)
             return JsonResponse({"message":"Sorry! Something went wrong..."})
 
 
