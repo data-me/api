@@ -142,10 +142,8 @@ class AcceptApply_view(APIView):
 
 class Offer_view(APIView):
     def get(self, request, format=None):
-        # List without filter
         try:
             data = request.GET
-            print(data['search'])
             if data['search']:
                 date = datetime.datetime.utcnow()
                 ofertas = Offer.objects.filter(Q(title__contains = data['search']) | Q(description__contains = data['search']), limit_time__gte = date, finished=False).values()
