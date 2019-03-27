@@ -14,6 +14,7 @@ from django.contrib.auth.models import Group
 from django.core.serializers.json import DjangoJSONEncoder
 from django import forms
 from statsmodels.sandbox.distributions.sppatch import expect
+from django.forms.models import model_to_dict
 
 class LazyEncoder(DjangoJSONEncoder):
     def default(self, obj):
@@ -65,6 +66,10 @@ def Apply_view(request):
         dataScientist = DataScientist.objects.all().get(user = request.user)
         offerId = data['offerId']
         offer = Offer.objects.all().get(pk = offerId)
+        applysInOffer = Apply.objects.all().filter(offer = offer)
+        for apply in applysInOffer:
+            if(apply.dataScientist.id == dataScientist.id):
+                return JsonResponse({"message":"DataScientist already applied"})
         #Aqu� pretendo hacer una restriccion comparando si el usuario logueado est� dentro de la lista de usuarios que han hecho apply
         #Sin embargo lo dejo comentado ya que no puedo probarlo
         #usuariosAplicados = Apply_model.objects.all().select_related("dataScientist")
@@ -72,11 +77,10 @@ def Apply_view(request):
 
         new_apply = Apply.objects.create(title=title, description=description, status=Apply.STATUS_CHOICES[0][1], date=date, dataScientist = dataScientist, offer = offer)
 
-        print('Sucessfully created new apply')
         return JsonResponse({"message":"Successfully created new apply"})
     if request.method == "GET":
-
-        try:
+        user_logged = User.objects.all().get(pk = request.user.id)
+        if (user_logged.groups.filter(name='Company').exists()):
                 thisCompany = Company.objects.all().get(user = request.user)
                 offers = Offer.objects.all().filter(company = thisCompany).distinct()
                 applys = []
@@ -96,7 +100,7 @@ def Apply_view(request):
                         applysInOffer = Apply.objects.all().filter(offer = offer, status = 'RE').values()
                         applys.extend(list(applysInOffer))
                 return JsonResponse(list(applys), safe=False)
-        except:
+        elif(user_logged.groups.filter(name='DataScientist').exists()):
                 dataScientistRecuperado = DataScientist.objects.all().get(user = request.user)
                 applys = []
                 data = request.GET
@@ -111,7 +115,28 @@ def Apply_view(request):
                 return JsonResponse(list(applys), safe=False)
 
 # Accept/Reject contract
-
+class AcceptApply_view(APIView):
+    def post(self, request, format=None):
+        user_logged = User.objects.all().get(pk = request.user.id)
+        if (user_logged.groups.filter(name='Company').exists()):
+            company = Company.objects.all().get(user = user_logged)
+            data = request.POST
+            idApply = data['idApply']
+            apply = Apply.objects.all().get(pk = idApply)
+            if(apply.offer.company == company):
+                if (Apply.objects.all().filter(offer = apply.offer,status = 'AC').exists()):
+                    res = JsonResponse({"message":"Offer has been already accepted"})
+                else:
+                    applysToUpdate = Apply.objects.all().filter(offer = apply.offer).update(status = 'RE')
+                    apply.status = 'AC'
+                    apply.save()
+                    res = JsonResponse(model_to_dict(apply), safe=False)
+            else:
+               res = JsonResponse({"message":"The company doesnt own the offer"})
+        else:
+            res = JsonResponse({"message":"Only companies can update an apply"})
+        return res
+        
 
 
 @csrf_exempt

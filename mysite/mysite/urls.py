@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/v1/refresh',refresh_jwt_token),
     path('api/v1/offer/', Offer_view ,name='offer'),
     path('api/v1/apply/', Apply_view,name='apply'),
+    path('api/v1/accept/', AcceptApply_view.as_view(),name='accept apply'),
     path('api/v1/helloworld', views.HelloWorld.as_view()),
     path('api/v1/cv/', CV_view.as_view()),
     path('api/v1/message/', Message_view, name='mesagge'),
