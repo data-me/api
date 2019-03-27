@@ -163,27 +163,27 @@ class CV_view(APIView):
             data = request.GET
             items = []
             logged_user = User.objects.all().get(pk = request.user.id)
+            try:
+                    #Ver mi CV
+                    dataScientistRecuperado = DataScientist.objects.all().get(user = logged_user)
+                    curriculum = CV.objects.all().filter(owner = dataScientistRecuperado).first()
+                    sections = Section.objects.all().filter(cv = curriculum)
+                    for sec in sections:
+                        sec_items = Item.objects.all().filter(section = sec)
+                        data_sec_items = serializers.serialize('json', sec_items)
+                        items.append(data_sec_items)
 
-            #Ver mi CV
-            if(logged_user.groups == [DataScientist]):
-                dataScientistRecuperado = DataScientist.objects.all().get(user = logged_user)
-                curriculum = CV.objects.all().filter(owner = dataScientistRecuperado).first()
-                sections = Section.objects.all().filter(cv = curriculum).values()
-                for sec in sections:
-                    sec_items = Item.objects.all().filter(section = sec).values()
-                    data_sec_items = serializers.serialize('json', sec_items)
-                    items.append(data_sec_items)
-            # Ver el CV de un Data scientist (como Company)
-            if(logged_user.groups == [Company]):
-                #companyRecuperado = Company.objects.all().get(user = logged_user)
-                dataScientistId = data['dataScientistId']
-                dataScientistUserRecuperado = User.objects.all().get(pk = dataScientistId)
-                scientist = DataScientist.objects.all().get(user = dataScientistUserRecuperado)
-                curriculum = CV.objects.all().filter(owner = scientist).first()
-                sections = Section.objects.all().filter(cv = curriculum).values()
-                for sec in sections:
-                    sec_items = Item.objects.all().filter(section = sec).values()
-                    items.append(sec_items)
+            except:
+                    #Ver CV de otro
+                    dataScientistId = data['dataScientistId']
+                    dataScientistUserRecuperado = User.objects.all().get(pk = dataScientistId)
+                    scientist = DataScientist.objects.all().get(user = dataScientistUserRecuperado)
+                    curriculum = CV.objects.all().filter(owner = scientist).first()
+                    sections = Section.objects.all().filter(cv = curriculum)
+                    for sec in sections:
+                        sec_items = Item.objects.all().filter(section = sec)
+                        data_sec_items = serializers.serialize('json', sec_items)
+                        items.append(data_sec_items)
 
             return JsonResponse(list(items), safe=False)
 
