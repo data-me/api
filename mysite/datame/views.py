@@ -140,7 +140,7 @@ class AcceptApply_view(APIView):
         else:
             res = JsonResponse({"message":"Only companies can update an apply"})
         return res
-        
+
 
 class Offer_view(APIView):
     def get(self, request, format=None):
@@ -185,7 +185,7 @@ class Offer_view(APIView):
             # Creation of new offer
 
             new_offer = Offer.objects.create(title=title, description=description, price_offered=float(price_offered), currency=currency, limit_time=date, contract=contract, files=files, company = thisCompany)
-            
+
             print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new offer')
             return JsonResponse({"message":"Successfully created new offer"})
@@ -227,9 +227,8 @@ class CV_view(APIView):
                     curriculum = CV.objects.all().filter(owner = dataScientistRecuperado).first()
                     sections = Section.objects.all().filter(cv = curriculum)
                     for sec in sections:
-                        sec_items = Item.objects.all().filter(section = sec)
-                        data_sec_items = serializers.serialize('json', sec_items)
-                        items.append(data_sec_items)
+                        sec_items = Item.objects.all().filter(section = sec).values()
+                        items.extend(sec_items)
 
             except:
                     #Ver CV de otro
@@ -239,9 +238,8 @@ class CV_view(APIView):
                     curriculum = CV.objects.all().filter(owner = scientist).first()
                     sections = Section.objects.all().filter(cv = curriculum)
                     for sec in sections:
-                        sec_items = Item.objects.all().filter(section = sec)
-                        data_sec_items = serializers.serialize('json', sec_items)
-                        items.append(data_sec_items)
+                        sec_items = Item.objects.all().filter(section = sec).values()
+                        items.extend(sec_items)
 
             return JsonResponse(list(items), safe=False)
 
