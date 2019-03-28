@@ -236,7 +236,7 @@ class CV_view(APIView):
     def get(self, request, format=None):
         if request.method == "GET":
             data = request.GET
-            items = []
+            secs = []
             logged_user = User.objects.all().get(pk = request.user.id)
             try:
                     #Ver mi CV
@@ -244,8 +244,13 @@ class CV_view(APIView):
                     curriculum = CV.objects.all().filter(owner = dataScientistRecuperado).first()
                     sections = Section.objects.all().filter(cv = curriculum)
                     for sec in sections:
+                        items = []
                         sec_items = Item.objects.all().filter(section = sec).values()
                         items.extend(sec_items)
+                        secs.append({
+                            'Section':str(sec),
+                            'Items':items
+                        });
 
             except:
                     #Ver CV de otro
@@ -255,10 +260,15 @@ class CV_view(APIView):
                     curriculum = CV.objects.all().filter(owner = scientist).first()
                     sections = Section.objects.all().filter(cv = curriculum)
                     for sec in sections:
+                        items = []
                         sec_items = Item.objects.all().filter(section = sec).values()
                         items.extend(sec_items)
+                        secs.append({
+                            'Section':str(sec),
+                            'Items':items
+                        });
 
-            return JsonResponse(list(items), safe=False)
+            return JsonResponse(list(secs), safe=False)
 
     def post(self, request, format=None):
         try:
