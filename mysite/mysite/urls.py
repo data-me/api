@@ -34,4 +34,5 @@ urlpatterns = [
     path('api/v1/item', Item_view.as_view()),
     path('api/v1/company', Company_view.as_view()),
     path('api/v1/populate', populate),
+    path('api/v1/whoami', whoami.as_view()),
 ]

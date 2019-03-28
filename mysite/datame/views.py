@@ -398,3 +398,14 @@ def populate(request):
     except:
         return JsonResponse({'Error': 'DB already populated'})
     
+class whoami(APIView):
+    def get(self, request, format=None):
+            try:
+                request.user.datascientist
+                return JsonResponse({'user_type': 'ds'})
+            except:
+                try:
+                    request.user.company
+                    return JsonResponse({'user_type': 'com'})
+                except:
+                    return JsonResponse({'user_type': 'None'})
