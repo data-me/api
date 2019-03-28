@@ -25,6 +25,22 @@ class LazyEncoder(DjangoJSONEncoder):
         return super().default(obj)
 
 
+class User_view(APIView):
+    def get(self, request, format=None):
+        try:
+            data = request.GET
+            user = request.user
+            users = []
+            try:
+                users = User.objects.all().values('username')
+                print(users)
+            except:
+                print("There are no users")
+    
+            return JsonResponse(list(users), safe=False)
+        except:
+            return JsonResponse({"message":"Oops, something went wrong"})
+            
 class Message_view(APIView):
     def post(self, request, format=None):
         try:
@@ -42,7 +58,8 @@ class Message_view(APIView):
     
             print('Sucessfully created new message')
             return JsonResponse({"message":"Successfully created new message"})
-        except:
+        except Exception as e:
+            print(e)
             return JsonResponse({"message":"Oops, something went wrong"})
     def get(self, request, format=None):
         try:
