@@ -25,6 +25,22 @@ class LazyEncoder(DjangoJSONEncoder):
         return super().default(obj)
 
 
+class User_view(APIView):
+    def get(self, request, format=None):
+        try:
+            data = request.GET
+            user = request.user
+            users = []
+            try:
+                users = User.objects.all().values('username')
+                print(users)
+            except:
+                print("There are no users")
+
+            return JsonResponse(list(users), safe=False)
+        except:
+            return JsonResponse({"message":"Oops, something went wrong"})
+
 class Message_view(APIView):
     def post(self, request, format=None):
         try:
@@ -37,12 +53,13 @@ class Message_view(APIView):
             receiver = User.objects.all().get(pk = receiverId)
             senderId = request.user
             print(senderId)
-    
+
             new_message = Message.objects.create(title=title, body=body, moment=moment, receiver=receiver, sender=senderId)
-    
+
             print('Sucessfully created new message')
             return JsonResponse({"message":"Successfully created new message"})
-        except:
+        except Exception as e:
+            print(e)
             return JsonResponse({"message":"Oops, something went wrong"})
     def get(self, request, format=None):
         try:
@@ -54,7 +71,7 @@ class Message_view(APIView):
                 print(messages)
             except:
                 print("You have 0 messages")
-    
+
             return JsonResponse(list(messages), safe=False)
         except:
             return JsonResponse({"message":"Oops, something went wrong"})
@@ -91,40 +108,28 @@ class Apply_view(APIView):
                     offers = Offer.objects.all().filter(company = thisCompany).distinct()
                     applys = []
                     data = request.GET
-                    filtro = data['filtro']
+                    #filtro = data['filtro']
                     #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
-                    if (filtro == 'PE'):
-                        for offer in offers:
-                            applysInOffer = Apply.objects.all().filter(offer = offer, status = 'PE').values()
-                            applys.extend(list(applysInOffer))
-                    if (filtro == 'AC'):
-                        for offer in offers:
-                            applysInOffer = Apply.objects.all().filter(offer = offer, status = 'AC').values()
-                            applys.extend(list(applysInOffer))
-                    if (filtro == 'RE'):
-                        for offer in offers:
-                            applysInOffer = Apply.objects.all().filter(offer = offer, status = 'RE').values()
-                            applys.extend(list(applysInOffer))
+
+                    for offer in offers:
+                        applysInOffer = Apply.objects.all().filter(offer = offer, status = 'PE').values()
+                        applys.extend(list(applysInOffer))
+
                     return JsonResponse(list(applys), safe=False)
             elif(user_logged.groups.filter(name='DataScientist').exists()):
                     dataScientistRecuperado = DataScientist.objects.all().get(user = request.user)
                     applys = []
                     data = request.GET
-                    filtro = data['filtro']
                     #TODO Cuando se realice el login lo ideal es que no se le tenga que pasar la ID del principal, sino recuperarla mediante autentificacion
-                    if (filtro == 'PE'):
-                        applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='PE').values()
-                    if (filtro == 'AC'):
-                        applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='AC').values()
-                    if (filtro == 'RE'):
-                        applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado,status ='RE').values()
+
+                    applys = Apply.objects.all().filter(dataScientist = dataScientistRecuperado).values()
                     return JsonResponse(list(applys), safe=False)
         except:
             return JsonResponse({"message":"Oops, something went wrong"})
 
 # Accept/Reject contract
 
-class AcceptApply_view(APIView):   
+class AcceptApply_view(APIView):
     def post(self, request, format=None):
         try:
             user_logged = User.objects.all().get(pk = request.user.id)
@@ -307,19 +312,19 @@ class Item_view(APIView):
                 data = request.POST
 
                 secid = data['secid']
-                
+
                 section = Section.objects.all().get(pk = secid)
-            
+
                 logged_userid = request.user.datascientist.id
-                
+
                 if logged_userid == section.cv.owner.id:
 
                     date_start = data['datestart']
                     date_finish = request.POST.get('datefinish')
 
-                    if date_finish != None: 
+                    if date_finish != None:
                         if date_start < date_finish:
-                        
+
                             try:
                                 item_tosave = Item.objects.all().get(pk = data['itemid'])
 
@@ -366,7 +371,7 @@ class Item_view(APIView):
                             return JsonResponse({"message":"Successfully created new item"})
             except:
                 return JsonResponse({"message":"Sorry! Something went wrong..."})
-            
+
 def populate(request):
     try:
         company = Group.objects.create(name='Company')
@@ -375,7 +380,7 @@ def populate(request):
         admin = User.objects.create_user('admin', email='lennon@thebeatles.com', password='admin', is_staff=True)
         permissions = Permission.objects.all()
         for p in permissions:
-            admin.user_permissions.add(p) 
+            admin.user_permissions.add(p)
         data1 = User.objects.create_user(username='data1',email='data1@beatles.com',password='123456data1')
         data1.groups.add(dataScientist)
 
@@ -397,7 +402,7 @@ def populate(request):
         return JsonResponse({'message': 'DB populated'})
     except:
         return JsonResponse({'Error': 'DB already populated'})
-    
+
 class whoami(APIView):
     def get(self, request, format=None):
             try:

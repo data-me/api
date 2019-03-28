@@ -7,8 +7,8 @@ from django.template.defaultfilters import default
 # Create your models here.
 
 class Message(models.Model):
-    receiver = models.OneToOneField(User, related_name='receiver', on_delete=models.CASCADE)
-    sender = models.OneToOneField(User, related_name='sender', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE)
     title = models.CharField('title', max_length = 30)
     body = models.TextField('body', max_length = 100)
     moment = models.DateTimeField(auto_now=True)
