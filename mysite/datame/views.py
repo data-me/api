@@ -253,7 +253,7 @@ class CV_view(APIView):
                         items.extend(sec_items)
                         secs.append({
                             'Section':str(sec),
-                            'Section Id':str(sec.id),
+                            'Section_Id':str(sec.id),
                             'Items':items
                         });
 
@@ -270,7 +270,7 @@ class CV_view(APIView):
                         items.extend(sec_items)
                         secs.append({
                             'Section':str(sec),
-                            'Section Id':str(sec.id),
+                            'Section_Id':str(sec.id),
                             'Items':items
                         });
 
