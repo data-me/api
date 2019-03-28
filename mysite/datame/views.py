@@ -321,6 +321,13 @@ class Section_view(APIView):
         except:
             return JsonResponse({"message":"Sorry! Something went wrong..."})
 
+class Section_name_view(APIView):
+    def get(self, request, format=None):
+        if request.method == "GET":
+            data = request.GET
+            secnames = Section_name.objects.all().values()
+            return JsonResponse(list(secnames), safe=False)
+
 
 class Item_view(APIView):
     def post(self, request, format=None):
