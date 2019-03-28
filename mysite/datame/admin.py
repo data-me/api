@@ -4,12 +4,11 @@ from .models import *
 
 # Register your models here.
 admin.site.register(Apply)
-admin.site.register(File)
 admin.site.register(Offer)
 admin.site.register(DataScientist)
-admin.site.register(Contract)
-admin.site.register(Bill)
 admin.site.register(CV)
 admin.site.register(Section)
 admin.site.register(Item)
 admin.site.register(Company)
+admin.site.register(Message)
+admin.site.register(Section_name)
