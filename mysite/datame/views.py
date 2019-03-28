@@ -113,7 +113,11 @@ class Apply_view(APIView):
 
                     for offer in offers:
                         applysInOffer = Apply.objects.all().filter(offer = offer, status = 'PE').values()
-                        applys.extend(list(applysInOffer))
+                        applysInOffer_2 = []
+                        for i in applysInOffer:
+                            i["DS_User_id"] = DataScientist.objects.filter(id=i["dataScientist_id"]).values_list()[0][1]
+                            applysInOffer_2.append(i)
+                        applys.extend(applysInOffer_2)
 
                     return JsonResponse(list(applys), safe=False)
             elif(user_logged.groups.filter(name='DataScientist').exists()):
