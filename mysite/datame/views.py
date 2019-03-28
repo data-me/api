@@ -49,8 +49,8 @@ class Message_view(APIView):
             body = data['body']
             moment = datetime.datetime.utcnow()
             #receiverId = User.objects.all().get(user = data['receiverId'])
-            receiverId = data['receiverId']
-            receiver = User.objects.all().get(pk = receiverId)
+            username = data['username']
+            receiver = User.objects.all().get(username = username)
             senderId = request.user
             print(senderId)
 

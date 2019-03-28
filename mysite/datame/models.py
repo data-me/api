@@ -9,8 +9,8 @@ from django.template.defaultfilters import default
 class Message(models.Model):
     receiver = models.ForeignKey(User, related_name='receiver', on_delete=models.CASCADE)
     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE)
-    title = models.CharField('title', max_length = 30)
-    body = models.TextField('body', max_length = 100)
+    title = models.CharField('title', max_length = 100)
+    body = models.TextField('body', max_length = 250)
     moment = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.title
