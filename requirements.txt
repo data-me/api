@@ -1,4 +1,4 @@
-Django==2.1
+Django
 psycopg2
 djangorestframework
 python-dotenv
