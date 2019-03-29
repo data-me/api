@@ -197,16 +197,10 @@ class Offer_view(APIView):
             files = data['files']
             thisCompany = Company.objects.all().get(user = request.user)
             # Time management
-            split_time = limit_time.split(',') # Split by comma what was sent from client
-            split_time = list(map(int, split_time)) # Convert from list of string to list of integers
+            if limit_time < datetime.datetime.now():
+                return JsonResponse({"message":"You must select a limit date after now."})
 
-            if len(split_time) == 7:
-                date = datetime.datetime(split_time[0], split_time[1],
-                    split_time[2], split_time[3], split_time[4], split_time[5], split_time[6], pytz.UTC)
-
-            # Creation of new offer
-
-            new_offer = Offer.objects.create(title=title, description=description, price_offered=float(price_offered), currency=currency, limit_time=date, contract=contract, files=files, company = thisCompany)
+            new_offer = Offer.objects.create(title=title, description=description, price_offered=float(price_offered), currency=currency, limit_time=limit_time, contract=contract, files=files, company = thisCompany)
 
             print('La data que devuelve es: ' + str(data))
             print('Sucessfully created new offer')
