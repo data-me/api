@@ -13,8 +13,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
-
-
 # Env variables===
 load_dotenv()
 
@@ -78,7 +76,11 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
 )
 
+BASEURL = 'https://api-datame.herokuapp.com'
+
 ROOT_URLCONF = 'mysite.urls'
+
+APIS = {}
 
 TEMPLATES = [
     {
@@ -171,3 +173,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+import django_heroku
+django_heroku.settings(locals())
